@@ -88,3 +88,19 @@ STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+PURPLE = '#553277'
+RED = '#f51100'
+YALOW = '#d3fb00'
+
+COLOR_CHOICES = [
+    (PURPLE, 'фиолетовый'),
+    (RED, 'красный'),
+    (YALOW, 'желтый')
+]
+
+TAG_CHOICES = [
+    ('Breakfast', 'Завтрак'),
+    ('lunch', 'обед'),
+    ('dinner', 'ужин')
+]

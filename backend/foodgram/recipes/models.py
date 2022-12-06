@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from foodgram.settings import COLOR_CHOICES, TAG_CHOICES
 
 User = get_user_model()
 
@@ -21,6 +22,39 @@ class Ingredient(models.Model):
         return f'{self.name}'
 
 
+class Tag(models.Model):
+    """ Описание модели Tag """
+    name = models.CharField(
+        max_length=64,
+        unique=True,
+        blank=False,
+        choices=TAG_CHOICES,
+        verbose_name='Название',
+        help_text='Название тега'
+    )
+    color = models.CharField(
+        max_length=64,
+        unique=True,
+        blank=False,
+        choices=COLOR_CHOICES,
+        verbose_name='Цвет',
+        help_text='Цвет тега'
+    )
+    slug = models.SlugField(
+        max_length=32,
+        unique=True,
+        blank=False,
+        db_index=True,
+        verbose_name='slug',
+        help_text='slug тега'
+    )
+
+    class Meta:
+        verbose_name = 'Тег'
+        verbose_name_plural = 'Теги'
+    
+    def __str__(self):
+        return f'{self.name}'
 
 
 class Recipe(models.Model):
@@ -51,11 +85,18 @@ class Recipe(models.Model):
         verbose_name='Описание',
         help_text='Описание рецепта'
     )
-    ingredients = models.ManyToManyField(
+    ingredient = models.ManyToManyField(
         Ingredient,
-        through='IngredientProperty'
+        through='IngredientProperty',
+        blank=False,
+        verbose_name='Ингредиент',
+        help_text='Ингредиент рецепта'
     )
-    # tags = отношение многие ко многоим
+    tag = models.ManyToManyField(
+        Tag,
+        verbose_name='Тег',
+        help_text='Тег рецепта'
+    )
     cooking_time = models.IntegerField(
         blank=False,
         verbose_name='Время приготовления',
