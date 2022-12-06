@@ -3,6 +3,25 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+class Ingredient(models.Model):
+    """ Описание модели Ингредиент """
+    name = models.CharField(
+        max_length=128,
+        blank=False,
+        db_index=True,
+        verbose_name='Название',
+        help_text='Название ингредиента'
+    )
+
+    class Meta:
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+
 
 class Recipe(models.Model):
     """ Описание модели рецепт """
@@ -10,7 +29,6 @@ class Recipe(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='recipe',
-        # unique=True,
         blank=False,
         verbose_name='Автор',
         help_text='Автор рецепта'
@@ -33,7 +51,10 @@ class Recipe(models.Model):
         verbose_name='Описание',
         help_text='Описание рецепта'
     )
-    # ingredients = отношение многие ко многим
+    ingredients = models.ManyToManyField(
+        Ingredient,
+        through='IngredientProperty'
+    )
     # tags = отношение многие ко многоим
     cooking_time = models.IntegerField(
         blank=False,
@@ -54,3 +75,33 @@ class Recipe(models.Model):
 
     def __str__(self):
         return f'{self.name}'
+
+
+class IngredientProperty(models.Model):
+    """ Описание модели свойства ингредиента """
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE
+    )
+    measurement_unit = models.CharField(
+        max_length=16,
+        blank=False,
+        verbose_name='Единица измерения',
+        help_text='Единица измерения ингредиента'
+    )
+    amount = models.IntegerField(
+        blank=False,
+        verbose_name='Количество',
+        help_text='Количество ингредиента'
+    )
+
+    class Meta:
+        verbose_name = 'Свойство ингредиент'
+        verbose_name_plural = 'Свойства ингредиентов'
+
+    def __str__(self):
+        return f'{self.ingredient}'
