@@ -1,8 +1,11 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+# from django.contrib.auth import get_user_model
 from foodgram.settings import COLOR_CHOICES, TAG_CHOICES
+# from user.models import User
+from foodgram.settings import AUTH_USER_MODEL
 
-User = get_user_model()
+User = AUTH_USER_MODEL
+# User = get_user_model()
 
 class Ingredient(models.Model):
     """ Описание модели Ингредиент """
@@ -50,7 +53,7 @@ class Tag(models.Model):
         help_text='slug тега'
     )
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, *args, **kwargs) -> None: # Сделать анотирование !!!!
         print(self.slug)
         self.color = COLOR_CHOICES[self.slug]
         return super().save(*args, **kwargs)
@@ -68,7 +71,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='recipe',
+        related_name='recipes',
         blank=False,
         verbose_name='Автор',
         help_text='Автор рецепта'
@@ -152,17 +155,3 @@ class IngredientProperty(models.Model):
 
     def __str__(self):
         return f'{self.ingredient}'
-
-
-# class TagProperty(models.Model):
-#     color = models.OneToOneField(
-#         Tag,
-#         max_length=64,
-#         related_name='tag_color',
-#         on_delete=models.CASCADE,
-#         # unique=True,
-#         blank=False,
-#         # choices=COLOR_CHOICES,
-#         verbose_name='Цвет',
-#         help_text='Цвет тега'
-#     ) 

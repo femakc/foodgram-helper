@@ -15,10 +15,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'djoser',
+    'rest_framework',
+    'rest_framework_simplejwt',
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
+    'user.apps.UserConfig',
 ]
 
 MIDDLEWARE = [
@@ -89,9 +91,9 @@ STATIC_URL = '/static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-PURPLE = '#553277'
-RED = '#f51100'
-YALOW = '#d3fb00'
+# PURPLE = '#553277'
+# RED = '#f51100'
+# YALOW = '#d3fb00'
 
 # COLOR_CHOICES = [
 #     ('breakfast', 'фиолетовый'),
@@ -105,7 +107,6 @@ COLOR_CHOICES = {
     'dinner': '#d3fb00'
 }
 
-
 BR = 'breakfast'
 LN = 'lunch'
 DR = 'dinner'
@@ -115,3 +116,11 @@ TAG_CHOICES = [
     (LN, 'обед'),
     (DR, 'ужин')
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+AUTH_USER_MODEL = 'user.User'
