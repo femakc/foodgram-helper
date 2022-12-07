@@ -93,14 +93,25 @@ PURPLE = '#553277'
 RED = '#f51100'
 YALOW = '#d3fb00'
 
-COLOR_CHOICES = [
-    (PURPLE, 'фиолетовый'),
-    (RED, 'красный'),
-    (YALOW, 'желтый')
-]
+# COLOR_CHOICES = [
+#     ('breakfast', 'фиолетовый'),
+#     ('lunch', 'красный'),
+#     ('dinner', 'желтый')
+# ]
+
+COLOR_CHOICES = {
+    'breakfast': '#553277',
+    'lunch': '#f51100',
+    'dinner': '#d3fb00'
+}
+
+
+BR = 'breakfast'
+LN = 'lunch'
+DR = 'dinner'
 
 TAG_CHOICES = [
-    ('Breakfast', 'Завтрак'),
-    ('lunch', 'обед'),
-    ('dinner', 'ужин')
+    (BR, 'Завтрак'),
+    (LN, 'обед'),
+    (DR, 'ужин')
 ]

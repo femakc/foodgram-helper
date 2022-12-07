@@ -24,6 +24,7 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     """ Описание модели Tag """
+
     name = models.CharField(
         max_length=64,
         unique=True,
@@ -36,7 +37,7 @@ class Tag(models.Model):
         max_length=64,
         unique=True,
         blank=False,
-        choices=COLOR_CHOICES,
+        default=None,
         verbose_name='Цвет',
         help_text='Цвет тега'
     )
@@ -48,6 +49,11 @@ class Tag(models.Model):
         verbose_name='slug',
         help_text='slug тега'
     )
+
+    def save(self, *args, **kwargs) -> None:
+        print(self.slug)
+        self.color = COLOR_CHOICES[self.slug]
+        return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Тег'
@@ -97,7 +103,7 @@ class Recipe(models.Model):
         verbose_name='Тег',
         help_text='Тег рецепта'
     )
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         blank=False,
         verbose_name='Время приготовления',
         help_text='Время приготовления рецепта'
@@ -134,7 +140,7 @@ class IngredientProperty(models.Model):
         verbose_name='Единица измерения',
         help_text='Единица измерения ингредиента'
     )
-    amount = models.IntegerField(
+    amount = models.PositiveSmallIntegerField(
         blank=False,
         verbose_name='Количество',
         help_text='Количество ингредиента'
@@ -146,3 +152,17 @@ class IngredientProperty(models.Model):
 
     def __str__(self):
         return f'{self.ingredient}'
+
+
+# class TagProperty(models.Model):
+#     color = models.OneToOneField(
+#         Tag,
+#         max_length=64,
+#         related_name='tag_color',
+#         on_delete=models.CASCADE,
+#         # unique=True,
+#         blank=False,
+#         # choices=COLOR_CHOICES,
+#         verbose_name='Цвет',
+#         help_text='Цвет тега'
+#     ) 

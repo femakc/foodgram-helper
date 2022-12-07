@@ -45,6 +45,7 @@ class TagAdmin(admin.ModelAdmin):
         'color',
         'slug'
     ]
+    prepopulated_fields = {"slug": ("name",)}
     # search_fields = ['name']
 
 admin.site.register(Recipe, RecipeAdmin)
