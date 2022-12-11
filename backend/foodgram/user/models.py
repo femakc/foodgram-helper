@@ -11,6 +11,7 @@ from django.contrib.auth.models import (
 
 from django.db import models
 
+from foodgram.settings import ROLES_CHOICES
 
 class UserManager(BaseUserManager):
     """
@@ -19,15 +20,14 @@ class UserManager(BaseUserManager):
     же самого кода, который Django использовал для создания User (для демонстрации).
     """
 
-    def create_user(self, username, email, password=None):
+    def create_user(self, username, email, password=None, **extra_fields):
         """ Создает и возвращает пользователя с имэйлом, паролем и именем. """
         if username is None:
             raise TypeError('Users must have a username.')
 
         if email is None:
             raise TypeError('Users must have an email address.')
-
-        user = self.model(username=username, email=self.normalize_email(email))
+        user = self.model(username=username, email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
         user.save()
 
@@ -46,41 +46,32 @@ class UserManager(BaseUserManager):
         return user
 
 class User(AbstractBaseUser, PermissionsMixin):
-    # Каждому пользователю нужен понятный человеку уникальный идентификатор,
-    # который мы можем использовать для предоставления User в пользовательском
-    # интерфейсе. Мы так же проиндексируем этот столбец в базе данных для
-    # повышения скорости поиска в дальнейшем.
     username = models.CharField(
         db_index=True,
-        max_length=255,
+        max_length=150,
         unique=True,
-        verbose_name='Логин ',
+        verbose_name='Уникальный юзернейм ',
         help_text='Логин пользователя'
     )
-
-    # Так же мы нуждаемся в поле, с помощью которого будем иметь возможность
-    # связаться с пользователем и идентифицировать его при входе в систему.
-    # Поскольку адрес почты нам нужен в любом случае, мы также будем
-    # использовать его для входы в систему, так как это наиболее
-    # распространенная форма учетных данных на данный момент (ну еще телефон).
     email = models.EmailField(
         db_index=True,
+        max_length=254,
         unique=True,
-        verbose_name='email',
+        verbose_name='Адрес электронной почты',
         help_text='email пользователя'
     )
-    password = models.CharField(
-        max_length=32,
-        verbose_name='Пароль',
-        help_text='Пароль пользователя'
-    )
+    # password = models.CharField(
+    #     max_length=150,
+    #     verbose_name='Пароль',
+    #     help_text='Пароль пользователя'
+    # )
     first_name = models.CharField(
-        max_length=32,
+        max_length=150,
         verbose_name='Имя',
         help_text='Имя пользователя'
     )
     last_name = models.CharField(
-        max_length=32,
+        max_length=150,
         verbose_name='Фамилия',
         help_text='Фамилия пользователя'
     )
@@ -92,29 +83,28 @@ class User(AbstractBaseUser, PermissionsMixin):
     # далее анализировать информацию.
     is_active = models.BooleanField(default=True)
 
-    # Этот флаг определяет, кто может войти в административную часть нашего
-    # сайта. Для большинства пользователей это флаг будет ложным.
     is_staff = models.BooleanField(default=False)
 
-    # Временная метка создания объекта.
+    is_subscribed = models.BooleanField(default=False)
+
+    role = models.CharField(
+        max_length=32,
+        choices=ROLES_CHOICES,
+        default='user',
+        verbose_name='Роль пользователя',
+        help_text='роль'
+    )
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания'
     )
 
-    # Временная метка показывающая время последнего обновления объекта.
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Дополнительный поля, необходимые Django
-    # при указании кастомной модели пользователя.
-
-    # Свойство USERNAME_FIELD сообщает нам, какое поле мы будем использовать
-    # для входа в систему. В данном случае мы хотим использовать почту.
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
-    # Сообщает Django, что определенный выше класс UserManager
-    # должен управлять объектами этого типа.
     objects = UserManager()
 
     def __str__(self):
@@ -131,22 +121,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self._generate_jwt_token()
 
     def get_full_name(self):
-        """
-        Этот метод требуется Django для таких вещей, как обработка электронной
-        почты. Обычно это имя фамилия пользователя, но поскольку мы не
-        используем их, будем возвращать username.
-        """
         return f"{self.last_name} {self.first_name}"
 
     def get_short_name(self):
-        """ Аналогично методу get_full_name(). """
         return self.username
 
     def _generate_jwt_token(self):
-        """
-        Генерирует веб-токен JSON, в котором хранится идентификатор этого
-        пользователя, срок действия токена составляет 1 день от создания
-        """
         dt = datetime.now() + timedelta(days=1)
 
         token = jwt.encode({
