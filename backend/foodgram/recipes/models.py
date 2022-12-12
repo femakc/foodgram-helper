@@ -16,7 +16,17 @@ class Ingredient(models.Model):
         verbose_name='Название',
         help_text='Название ингредиента'
     )
-
+    measurement_unit = models.CharField(
+        max_length=16,
+        blank=False,
+        verbose_name='Единица измерения',
+        help_text='Единица измерения ингредиента'
+    )
+    amount = models.PositiveSmallIntegerField(
+        blank=False,
+        verbose_name='Количество',
+        help_text='Количество ингредиента'
+    )
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
@@ -54,7 +64,7 @@ class Tag(models.Model):
     )
 
     def save(self, *args, **kwargs) -> None: # Сделать анотирование !!!!
-        print(self.slug)
+        # print(self.slug)
         self.color = COLOR_CHOICES[self.slug]
         return super().save(*args, **kwargs)
 
@@ -94,9 +104,9 @@ class Recipe(models.Model):
         verbose_name='Описание',
         help_text='Описание рецепта'
     )
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
-        through='IngredientProperty',
+        # on_delete=models.CASCADE,
         blank=False,
         verbose_name='Ингредиент',
         help_text='Ингредиент рецепта'
@@ -127,31 +137,31 @@ class Recipe(models.Model):
         return f'{self.name}'
 
 
-class IngredientProperty(models.Model):
-    """ Описание модели свойства ингредиента """
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE
-    )
-    ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.CASCADE
-    )
-    measurement_unit = models.CharField(
-        max_length=16,
-        blank=False,
-        verbose_name='Единица измерения',
-        help_text='Единица измерения ингредиента'
-    )
-    amount = models.PositiveSmallIntegerField(
-        blank=False,
-        verbose_name='Количество',
-        help_text='Количество ингредиента'
-    )
+# class IngredientProperty(models.Model):
+#     """ Описание модели свойства ингредиента """
+#     recipe = models.ForeignKey(
+#         Recipe,
+#         on_delete=models.CASCADE
+#     )
+#     ingredient = models.ForeignKey(
+#         Ingredient,
+#         on_delete=models.CASCADE
+#     )
+#     measurement_unit = models.CharField(
+#         max_length=16,
+#         blank=False,
+#         verbose_name='Единица измерения',
+#         help_text='Единица измерения ингредиента'
+#     )
+#     amount = models.PositiveSmallIntegerField(
+#         blank=False,
+#         verbose_name='Количество',
+#         help_text='Количество ингредиента'
+#     )
 
-    class Meta:
-        verbose_name = 'Свойство ингредиент'
-        verbose_name_plural = 'Свойства ингредиентов'
+#     class Meta:
+#         verbose_name = 'Свойство ингредиент'
+#         verbose_name_plural = 'Свойства ингредиентов'
 
-    def __str__(self):
-        return f'{self.ingredient}'
+#     def __str__(self):
+#         return f'{self.ingredient}'

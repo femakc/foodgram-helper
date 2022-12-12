@@ -2,6 +2,7 @@ from django.urls import include, path
 # from recipes.views import RecipeViewSet
 from rest_framework.routers import DefaultRouter
 from user.views import UserVievSet, GetToken, UsersVievSet, APILogoutView
+from recipes.views import TagsViewSet, RecipeVievSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 
@@ -12,6 +13,8 @@ router = DefaultRouter()
 router.register(r'users', UsersVievSet, basename='users')
 router.register(r'users', UserVievSet, basename='users')
 router.register(r'users/set_password/', UsersVievSet, basename='users')
+router.register(r'tags', TagsViewSet, basename='tags')
+router.register(r'recipes', RecipeVievSet, basename='recipes')
 
 
 

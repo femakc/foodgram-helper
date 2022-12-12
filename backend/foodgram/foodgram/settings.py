@@ -103,11 +103,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # RED = '#f51100'
 # YALOW = '#d3fb00'
 
-# COLOR_CHOICES = [
-#     ('breakfast', 'фиолетовый'),
-#     ('lunch', 'красный'),
-#     ('dinner', 'желтый')
-# ]
+R_CHOICES = {
+    'breakfast': 'Завтрак',
+    'lunch': 'обед',
+    'dinner': 'ужин'
+}
 
 COLOR_CHOICES = {
     'breakfast': '#553277',
