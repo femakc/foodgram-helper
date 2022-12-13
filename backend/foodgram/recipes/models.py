@@ -22,11 +22,11 @@ class Ingredient(models.Model):
         verbose_name='Единица измерения',
         help_text='Единица измерения ингредиента'
     )
-    amount = models.PositiveSmallIntegerField(
-        blank=False,
-        verbose_name='Количество',
-        help_text='Количество ингредиента'
-    )
+    # amount = models.PositiveSmallIntegerField(
+    #     blank=False,
+    #     verbose_name='Количество',
+    #     help_text='Количество ингредиента'
+    # )
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
@@ -107,12 +107,14 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         # on_delete=models.CASCADE,
+        through='IngredientProperty',
         blank=False,
         verbose_name='Ингредиент',
         help_text='Ингредиент рецепта'
     )
     tag = models.ManyToManyField(
         Tag,
+        through='TagProperty',
         verbose_name='Тег',
         help_text='Тег рецепта'
     )
@@ -137,31 +139,44 @@ class Recipe(models.Model):
         return f'{self.name}'
 
 
-# class IngredientProperty(models.Model):
-#     """ Описание модели свойства ингредиента """
-#     recipe = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE
-#     )
-#     ingredient = models.ForeignKey(
-#         Ingredient,
-#         on_delete=models.CASCADE
-#     )
-#     measurement_unit = models.CharField(
-#         max_length=16,
-#         blank=False,
-#         verbose_name='Единица измерения',
-#         help_text='Единица измерения ингредиента'
-#     )
-#     amount = models.PositiveSmallIntegerField(
-#         blank=False,
-#         verbose_name='Количество',
-#         help_text='Количество ингредиента'
-#     )
+class IngredientProperty(models.Model):
+    """ Описание модели свойства ингредиента """
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='ingredient_property'
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        related_name='ingredient_property',
+    )
+    amount = models.PositiveSmallIntegerField(
+        blank=False,
+        verbose_name='Количество',
+        help_text='Количество ингредиента'
+    )
 
-#     class Meta:
-#         verbose_name = 'Свойство ингредиент'
-#         verbose_name_plural = 'Свойства ингредиентов'
+    class Meta:
+        verbose_name = 'Свойство ингредиент'
+        verbose_name_plural = 'Свойства ингредиентов'
 
-#     def __str__(self):
-#         return f'{self.ingredient}'
+    def __str__(self):
+        return f'{self.ingredient}'
+
+
+class TagProperty(models.Model):
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+    )
+    tag = models.ForeignKey(
+        Tag,
+        on_delete=models.CASCADE
+    )
+    class Meta:
+        verbose_name = 'Свойство тега'
+        verbose_name_plural = 'Свойства тега'
+
+    def __str__(self):
+        return f'{self.tag}'

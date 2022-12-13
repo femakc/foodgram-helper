@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from .models import Tag, Recipe
 from .serializers import TagSerializer, RecipeSerialzer
 from api.permissions import IsAuthorOrReadOnly
+from rest_framework.permissions import AllowAny
 
 
 class TagsViewSet(
@@ -14,6 +15,7 @@ class TagsViewSet(
 ):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = [AllowAny,]
     pagination_class = None
 
 
