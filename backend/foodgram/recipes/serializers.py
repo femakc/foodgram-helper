@@ -45,10 +45,19 @@ class TagSerializer(serializers.ModelSerializer):
         return R_CHOICES[obj.name]
 
 
-class IngredientAmountSerializer(serializers.ModelSerializer):
+class IngredientPropertySerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+
     class Meta:
         model = IngredientProperty
-        fields = ['amount']
+        fields = [
+            'id',
+            'name',
+            'measurement_unit',
+            'amount',
+        ]
 
 
 class IngredientsSerializer(serializers.ModelSerializer):
@@ -64,8 +73,8 @@ class IngredientsSerializer(serializers.ModelSerializer):
 
 class RecipeSerialzer(serializers.ModelSerializer):
     tag = TagSerializer(many=True)
-    author = UserSerializer()
-    ingredients = IngredientsSerializer(many=True)
+    author = UserSerializer(read_only=True)
+    ingredients = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -82,53 +91,70 @@ class RecipeSerialzer(serializers.ModelSerializer):
             'cooking_time'
         ]
 
-    # def decodeImage(self, obj):
-    #     try:
-    #         s = base64.b64decode(s.encode('UTF-8'))
-    #         buf = io.BytesIO(s)
-    #         img = Image.open(buf)
-    #         return img
-    #     except:
-    #         return None
+    def get_ingredients(self, obj):
+        ingredients = IngredientProperty.objects.filter(recipe=obj)
+        return IngredientPropertySerializer(ingredients, many=True).data
 
-    def to_internal_value(self, data):
+    def to_internal_value(self, data) -> dict:
         decode_data = data.get('image')
         image_data = b64decode(decode_data.split(',')[1])
         image = ContentFile(image_data, 'image.jpg')
-        author = self.context.get('request').user
+        # author = self.context.get('request').user
         cooking_time = data.get('cooking_time')
         is_favorited = data.get('is_favorited')
         is_in_shopping_cart = data.get('is_in_shopping_cart')
-        name = data.get('name')
+        # name = data.get('name')
         ingredients = data.get('ingredients')
         tags = data.get('tags')
 
+        def ingregient_validator(dicts) -> bool:
+            key_list = []
+            for i in dicts:
+                if not Ingredient.objects.filter(pk=i['id']).exists():
+                    return True
+                if i['id'] in key_list:
+                    return True
+                key_list.append(i['id'])
+            return False
 
-        # Perform the data validation.
-        if name:
-            if Recipe.objects.filter(name=name).exists():
-                raise serializers.ValidationError({
-                'name': 'Рецепт с таким именем уже существует'
-            })
-        else:
-            raise serializers.ValidationError({
-                'name': 'Это обязательное поле.'
-            })
+        def tag_validator(tags) -> bool:
+            tags_list = []
+            for i in tags:
+                if not Tag.objects.filter(pk=i).exists():
+                    return True
+                if i in tags_list:
+                    return True
+                tags_list.append(i)
+            return False
+
+        # if name:
+        #     if Recipe.objects.filter(name=name).exists():
+        #         raise serializers.ValidationError({
+        #         'name': 'Рецепт с таким именем уже существует'
+        #     })
+        # else:
+        #     raise serializers.ValidationError({
+        #         'name': 'Это обязательное поле.'
+        #     })
         if not ingredients:
             raise serializers.ValidationError({
                 'ingredients': 'Это обязательное поле'
+            })
+        if ingregient_validator(ingredients):
+            raise serializers.ValidationError({
+                'ingredients': 'Не валидный ингредиент!'
             })
         if not tags:
             raise serializers.ValidationError({
                 'tags': 'Это обязательное поле'
             })
+        if tag_validator(tags):
+            raise serializers.ValidationError({
+                'tags': 'Не валидный тег'
+            })  
         if not image:
             raise serializers.ValidationError({
                 'image': 'Это обязательное поле.'
-            })
-        if not author:
-            raise serializers.ValidationError({
-                'author': 'Это обязательное поле.'
             })
         if not cooking_time:
             raise serializers.ValidationError({
@@ -139,36 +165,51 @@ class RecipeSerialzer(serializers.ModelSerializer):
         if not is_in_shopping_cart:
             is_in_shopping_cart = False
 
-        # Return the validated values. This will be available as
-        # the `.validated_data` property.
         return {
-            'name': name,
+            # 'name': name,
             'ingredients': ingredients,
             'tags': tags,
             'image': image,
-            'author': author,
             'cooking_time': cooking_time,
             'is_favorited': is_favorited,
             'is_in_shopping_cart': is_in_shopping_cart
         }
 
-    def create(self, validated_data):
-        ingredients_data = validated_data.pop('ingredients')
-        tags_data =validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
+    def create_ingredient(self, ingredients_data, recipe) -> None:
         for ingredient_data in ingredients_data:
-            amount = ingredient_data['amount']
-            current_ingredient, status = Ingredient.objects.get_or_create(
+            ingredient = Ingredient.objects.get(
                 pk=ingredient_data['id']
             )
             IngredientProperty.objects.create(
                 recipe=recipe,
-                ingredient=current_ingredient,
-                amount=amount
+                ingredient=ingredient,
+                amount=ingredient_data['amount']
             )
+
+    def create_tag(self, tags_data, recipe) -> None:
         for tag_data in tags_data:
             TagProperty.objects.create(
                 recipe=recipe,
                 tag=Tag.objects.get(pk=tag_data)
             )
+
+    def create(self, validated_data):
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data =validated_data.pop('tags')
+        author = self.context.get('request').user
+        recipe = Recipe.objects.create(author=author, **validated_data)
+        self.create_ingredient(ingredients_data, recipe)
+        self.create_tag(tags_data, recipe)
+        return recipe
+
+    def update(self, instance, validated_data):
+        # Recipe.objects.filter(pk=instance.id).delete()
+        TagProperty.objects.filter(recipe_id=instance.id).delete()
+        IngredientProperty.objects.filter(recipe_id=instance.id).delete()
+        ingredients_data = validated_data.pop('ingredients')
+        tags_data =validated_data.pop('tags')
+        author = self.context.get('request').user
+        recipe = Recipe.objects.update_or_create(author=author, **validated_data)
+        self.create_ingredient(ingredients_data, instance)
+        self.create_tag(tags_data, instance)
         return recipe
