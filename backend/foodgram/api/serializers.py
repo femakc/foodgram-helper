@@ -1,46 +1,40 @@
-from rest_framework import serializers# , exceptions, status
-from rest_framework.validators import UniqueTogetherValidator
-from collections import OrderedDict
-from  django.contrib.auth.hashers import make_password
-from rest_framework import serializers, exceptions, status
-from recipes.models import Tags, Recipe, Ingredient, IngredientProperty, TagsProperty, UserShopCart
-import webcolors
-from foodgram.settings import R_CHOICES
-from user.serializers import UserSerializer
-import base64
-from user.models import User, Follow
-# from foodgram.recipes.models import Recipe
-# from recipes.serializers import ShopingCardSerializer
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-# import io
-# from PIL import Image
-
 from base64 import b64decode
+
+import webcolors
+from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+
+from foodgram.settings import R_CHOICES
+from recipes.models import (
+    Ingredient,
+    IngredientProperty,
+    Recipe,
+    Tags,
+    TagsProperty
+)
+from user.models import Follow, User
 
 
 class Hex2NameColor(serializers.Field):
     """ Преобразование HEX цвета """
-    # При чтении данных ничего не меняем - просто возвращаем как есть
     def to_representation(self, value):
         return value
-    # При записи код цвета конвертируется в его название
+
     def to_internal_value(self, data):
-        # Доверяй, но проверяй
         try:
-            # Если имя цвета существует, то конвертируем код в название
             data = webcolors.hex_to_name(data)
         except ValueError:
-            # Иначе возвращаем ошибку
             raise serializers.ValidationError('Для этого цвета нет имени')
-        # Возвращаем данные в новом формате
         return data
 
 
 class TagsSerializer(serializers.ModelSerializer):
+    """ Сериализаторор для модели Tags."""
     color = Hex2NameColor()
     name = serializers.SerializerMethodField()
+
     class Meta:
         model = Tags
         fields = [
@@ -55,9 +49,13 @@ class TagsSerializer(serializers.ModelSerializer):
 
 
 class IngredientPropertySerializer(serializers.ModelSerializer):
+    """ Сериализаторор для модели IngredientProperty."""
+
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = IngredientProperty
@@ -70,7 +68,8 @@ class IngredientPropertySerializer(serializers.ModelSerializer):
 
 
 class IngredientsSerializer(serializers.ModelSerializer):
-    # amount = serializers.ModelField(model_field=IngredientProperty()._meta.get_field('amount'))
+    """ Сериализаторор для модели Ingredient."""
+
     class Meta:
         model = Ingredient
         fields = [
@@ -78,10 +77,45 @@ class IngredientsSerializer(serializers.ModelSerializer):
             'name',
             'measurement_unit',
             # 'amount'
-        ]        
+        ]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """ Сериализаторор для модели User."""
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+
+    def create(self, validated_data):
+        password = validated_data['password']
+        validated_data['password'] = make_password(password)
+        return super().create(validated_data)
+
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'password',
+        ]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=User.objects.all(),
+                fields=('username', 'email'),
+                message='Имя пользователя или email уже используются'
+            )
+        ]
 
 
 class RecipeSerialzer(serializers.ModelSerializer):
+    """ Сериализатор модели Recipe. """
+
     tags = TagsSerializer(many=True)
     author = UserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
@@ -160,7 +194,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
         if tags_validator(tags):
             raise serializers.ValidationError({
                 'tags': 'Не валидный тег'
-            })  
+            })
         if not image:
             raise serializers.ValidationError({
                 'image': 'Это обязательное поле.'
@@ -205,7 +239,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients')
-        tags_data =validated_data.pop('tags')
+        tags_data = validated_data.pop('tags')
         author = self.context.get('request').user
         recipe = Recipe.objects.create(author=author, **validated_data)
         self.create_ingredient(ingredients_data, recipe)
@@ -216,7 +250,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
         TagsProperty.objects.filter(recipe_id=instance.id).delete()
         IngredientProperty.objects.filter(recipe_id=instance.id).delete()
         ingredients_data = validated_data.pop('ingredients')
-        tags_data =validated_data.pop('tags')
+        tags_data = validated_data.pop('tags')
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
         self.create_ingredient(ingredients_data, instance)
@@ -226,36 +260,20 @@ class RecipeSerialzer(serializers.ModelSerializer):
 
 
 class ShopingCardSerializer(serializers.ModelSerializer):
-
+    """ Сериализатор модели Recipe Shop Cart. """
     class Meta:
         model = Recipe
         fields = [
             'id',
             'name',
             'image',
-            'cooking_time',
-            # 'is_in_shopping_cart',
-            # 'is_favorited'
+            'cooking_time'
         ]
-
-class TokenSerializer(TokenObtainPairSerializer):
-
-    def validate(self, attrs):
-        data = super().validate(attrs)
-
-        refresh = self.get_token(self.user)
-
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        data['auth_token'] = {'auth_token': data['access']}
-
-
-        return data['auth_token']
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """ Сериализация регистрации пользователя и создания нового. """
-    # email = serializers.EmailField()
+
     password = serializers.CharField(
         max_length=128,
         min_length=8,
@@ -286,13 +304,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             username = User.objects.filter(
                 username=data['username'],
                 email=data['email']
-            )   
-            # if username.exists():
-            #     send_message(data['username'])
-            # else:
-            #     raise serializers.ValidationError(
-            #         "user не соответствует email"
-            #     )
+            )
         else:
             username = User.objects.filter(username=data['username'])
             if username.exists():
@@ -306,41 +318,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """ Сериализаторор для модели User."""
-    password = serializers.CharField(
-        max_length=128,
-        min_length=8,
-        write_only=True
-    )
-
-    def create(self, validated_data):
-        password = validated_data['password']
-        validated_data['password'] = make_password(password)
-        return super().create(validated_data)
-
-    class Meta:
-        model = User
-        fields = [
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'password',
-        ]
-        # exclude = ['password']
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=('username', 'email'),
-                message='Имя пользователя или email уже используются'
-            )
-        ]
-
-
 class SetPasswordSerializer(serializers.ModelSerializer):
+    """ Сериализатор эндпойнта SetPassword. """
     new_password = serializers.CharField(
         required=True,
         max_length=128,
@@ -353,20 +332,25 @@ class SetPasswordSerializer(serializers.ModelSerializer):
         min_length=8,
         write_only=True
     )
+
     class Meta:
         model = User
         fields = ['new_password', 'current_password']
 
     def validate(self, attrs):
         if attrs['new_password'] == attrs['current_password']:
-            raise serializers.ValidationError("новый и старый пароли идентичны")
+            raise serializers.ValidationError(
+                "новый и старый пароли идентичны"
+            )
         return super().validate(attrs)
 
+
 class UserSubscribtionsSerializer(serializers.ModelSerializer):
+    """ Сериализатор эндпойнта UserSubscribtions. """
+
     recipes = ShopingCardSerializer(many=True)
     recipes_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
-
 
     class Meta:
         model = User
@@ -397,19 +381,28 @@ class UserSubscribtionsSerializer(serializers.ModelSerializer):
         instance.email = author.email
         return instance
 
+
 class FollowSerializer(serializers.ModelSerializer):
+    """ Сериализатор модели Follow. """
+
     result = UserSubscribtionsSerializer()
-    # author = UserSerializer()
+
     class Meta:
         model = Follow
         fields = "__all__"
 
+
 class IngredientSerializer(serializers.ModelSerializer):
+    """ Сериализатор модели Ingredient. """
+
     class Meta:
         model = Ingredient
         fields = "__all__"
 
+
 class UsersSerializer(serializers.ModelSerializer):
+    """ Сериализатор модели Users List и Create. """
+
     class Meta:
         model = User
         fields = [

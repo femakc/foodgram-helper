@@ -1,17 +1,26 @@
 import os
-from foodgram.settings import BASE_DIR
-from django.shortcuts import render, get_object_or_404, HttpResponse
-from rest_framework import status, viewsets, filters
-from rest_framework.viewsets import mixins
-from rest_framework.response import Response
-from .models import Tags, Recipe, UserShopCart, IngredientProperty, UserFavorite, Ingredient
-from api.serializers import TagsSerializer, RecipeSerialzer, ShopingCardSerializer, IngredientSerializer
-from api.permissions import IsAuthorOrReadOnly
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.decorators import action
-from django.db.models import Sum
-from django_filters.rest_framework import DjangoFilterBackend
 
+from django.db.models import Sum
+from django.shortcuts import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import mixins
+
+from api.permissions import IsAuthorOrReadOnly
+from api.serializers import (IngredientSerializer, RecipeSerialzer,
+                             ShopingCardSerializer, TagsSerializer)
+from foodgram.settings import BASE_DIR
+
+from .models import (
+    Ingredient,
+    IngredientProperty,
+    Recipe,
+    Tags,
+    UserShopCart
+)
 
 
 class TagsViewSet(
@@ -19,13 +28,28 @@ class TagsViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet
 ):
+    """ Обработчик модели Tags """
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
     permission_classes = [AllowAny,]
     pagination_class = None
 
 
+class IngredientVievSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    """ Обработчик модели Ingredient """
+    queryset = Ingredient.objects.all()
+    permission_classes = [AllowAny,]
+    serializer_class = IngredientSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ['name',]
+
+
 class RecipeVievSet(viewsets.ModelViewSet):
+    """ Обработчик модели Recipe """
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerialzer
     permission_classes = (IsAuthorOrReadOnly,)
@@ -44,27 +68,27 @@ class RecipeVievSet(viewsets.ModelViewSet):
         name='download_shopping_cart'
     )
     def download_shopping_cart(self, request):
+        """ Скачать файл со списком ингредиентов """
         ingredient = IngredientProperty.objects.filter(
             recipe__usershopcart__user=request.user
         ).values(
             'ingredient__name',
-            'ingredient__measurement_unit'          
+            'ingredient__measurement_unit'
         ).annotate(amount=Sum('amount'))
-        # что делать если нет ингредиентов Создать сообщение или нет ? !!!!!!
+
         shop_list_file = open('shop_list_file.txt', 'w')
         for i in ingredient:
-            shop_list_file.write(f'\n')
+            shop_list_file.write("\n")
             for key, value in i.items():
                 shop_list_file.write(f'{key} - {value}\n')
+
         shop_list_file.close()
-
         my_file = os.path.join(BASE_DIR, 'shop_list_file.txt')
-
         with open(my_file, 'r') as f:
-           file_data = f.read()
-        response = HttpResponse(file_data, status=status.HTTP_200_OK)
-        return response
-        
+            file_data = f.read()
+
+        return HttpResponse(file_data, status=status.HTTP_200_OK)
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -72,7 +96,7 @@ class RecipeVievSet(viewsets.ModelViewSet):
         name='shopping_cart'
     )
     def shopping_cart(self, request, pk=None, field='cart'):
-        """ обработчик запросов по url .../shopping_cart/"""
+        """ Обработка запросов на добавление в избранное и корзину """
         if field == 'cart':
             request.data['is_in_shopping_cart'] = True
         elif field == 'favorite':
@@ -80,29 +104,38 @@ class RecipeVievSet(viewsets.ModelViewSet):
         if Recipe.objects.filter(pk=pk).exists():
             user = request.user
             recipe = Recipe.objects.get(pk=pk)
-            shop_cart_model = UserShopCart.objects.get_or_create(user=user, recipe=recipe)
+            shop_cart_model = UserShopCart.objects.get_or_create(
+                user=user,
+                recipe=recipe
+            )
 
             if request.method == "POST":
                 shop_cart_model[0].recipe.is_in_shopping_cart = True
                 shop_cart_model[0].save()
-                cart_recipe = Recipe.objects.get(pk=shop_cart_model[0].recipe.id)
+                cart_recipe = Recipe.objects.get(
+                    pk=shop_cart_model[0].recipe.id
+                )
                 request.data['name'] = cart_recipe.name
                 request.data['cooking_time'] = cart_recipe.cooking_time
                 request.data['image'] = cart_recipe.image
-                # if not request.data.get('is_in_shopping_cart'):
-                #     request.data['is_in_shopping_cart'] = cart_recipe.is_in_shopping_cart
-                # if not request.data.get('is_favorited'):
-                #     request.data['is_favorited'] = cart_recipe.is_favorited
-                # request.data['is_in_shopping_cart'] = True
                 serializer = ShopingCardSerializer(recipe, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        serializer.data,
+                        status=status.HTTP_201_CREATED
+                    )
+                return Response(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             if request.method == 'DELETE':
                 UserShopCart.objects.get(user=user, recipe=recipe).delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)           
-        return Response({'errors': 'нет такого рецепта'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': 'нет такого рецепта'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         detail=True,
@@ -114,15 +147,3 @@ class RecipeVievSet(viewsets.ModelViewSet):
         """ обработчик запросов по url .../favorite/"""
         favorite = 'favorite'
         return self.shopping_cart(request, pk, favorite)
-
-
-class IngredientVievSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
-    queryset = Ingredient.objects.all()
-    permission_classes = [AllowAny,]
-    serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ['name',]

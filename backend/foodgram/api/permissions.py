@@ -3,26 +3,26 @@ from rest_framework import permissions
 from foodgram.settings import ADMIN
 
 
-class IsOwnerOrAdmin(permissions.BasePermission):
-    """
-    Custom permission .
-    """
-    def has_permission(self, request, view):
-        return (
-            request.user.is_staff
-            or request.user.is_authenticated
-        )
+# class IsOwnerOrAdmin(permissions.BasePermission):
+#     """
+#     Custom permission .
+#     """
+#     def has_permission(self, request, view):
+#         return (
+#             request.user.is_staff
+#             or request.user.is_authenticated
+#         )
 
 
-class IsAdminRole(permissions.BasePermission):
-    """
-    Доступ только у Администратора .
-    """
-    def has_permission(self, request, view):
-        return (
-            request.user.role == ADMIN
-            or request.user.is_superuser
-        )
+# class IsAdminRole(permissions.BasePermission):
+#     """
+#     Доступ только у Администратора .
+#     """
+#     def has_permission(self, request, view):
+#         return (
+#             request.user.role == ADMIN
+#             or request.user.is_superuser
+#         )
 
 
 class IsOwnerOnly(permissions.BasePermission):
@@ -60,16 +60,9 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
             or request.user.is_authenticated
         )
 
-    def has_object_permission(self, request, view, obj):
-        return (
-            request.method in permissions.SAFE_METHODS
-            or obj.author == request.user
-            or request.user.role == ADMIN
-        )
-
-# class IsAuthorizadeOrAuthor(permissions.BasePermission):
-#     def has_permission(self, request, view):
+#     def has_object_permission(self, request, view, obj):
 #         return (
 #             request.method in permissions.SAFE_METHODS
-#             or request.user.is_authenticated
+#             or obj.author == request.user
+#             or request.user.role == ADMIN
 #         )

@@ -1,15 +1,12 @@
 from django.db import models
-# from django.contrib.auth import get_user_model
-from foodgram.settings import COLOR_CHOICES, TAG_CHOICES
-# from user.models import User
-from foodgram.settings import AUTH_USER_MODEL
-from django.db.models.constraints import UniqueConstraint
+from foodgram.settings import AUTH_USER_MODEL, COLOR_CHOICES, TAG_CHOICES
 
 User = AUTH_USER_MODEL
-# User = get_user_model()
+
 
 class Ingredient(models.Model):
     """ Описание модели Ингредиент """
+
     name = models.CharField(
         max_length=128,
         blank=False,
@@ -60,20 +57,21 @@ class Tags(models.Model):
         help_text='slug тега'
     )
 
-    def save(self, *args, **kwargs) -> None: # Сделать анотирование !!!!
+    def save(self, *args, **kwargs):
         self.color = COLOR_CHOICES[self.slug]
         return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-    
+
     def __str__(self):
         return f'{self.name}'
 
 
 class Recipe(models.Model):
-    """ Описание модели рецепт """
+    """ Описание модели Recipe """
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -89,7 +87,7 @@ class Recipe(models.Model):
         help_text='Название рецепта'
     )
     image = models.ImageField(
-        blank=False, # для тестов True, на прод поставить False
+        blank=False,
         verbose_name='Изображение',
         help_text='Изображение рецепта'
     )
@@ -101,7 +99,6 @@ class Recipe(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        # on_delete=models.CASCADE,
         through='IngredientProperty',
         blank=False,
         verbose_name='Ингредиент',
@@ -136,6 +133,7 @@ class Recipe(models.Model):
 
 class IngredientProperty(models.Model):
     """ Описание модели свойства ингредиента """
+
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -161,6 +159,7 @@ class IngredientProperty(models.Model):
 
 
 class TagsProperty(models.Model):
+    """ Описание модели свойства тега"""
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
@@ -169,6 +168,7 @@ class TagsProperty(models.Model):
         Tags,
         on_delete=models.CASCADE
     )
+
     class Meta:
         verbose_name = 'Свойство тега'
         verbose_name_plural = 'Свойства тега'
@@ -176,8 +176,10 @@ class TagsProperty(models.Model):
     def __str__(self):
         return f'{self.tags}'
 
+
 class UserShopCart(models.Model):
     """ Модель корзины покупок """
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -202,45 +204,41 @@ class UserShopCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-        # constraints = UniqueConstraint(
-        #     fields=['user', 'recipe'],
-        #     name='usershopcart'
-        # )
 
     def __str__(self):
         return f"{self.user} добавил в список покупок {self.recipe}"
 
 
-class UserFavorite(models.Model): # переназвать на recepi favorite
-    """ Модель корзины покупок """
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='favorite',
-        blank=False,
-        verbose_name='Пользователь',
-        help_text='Пользователь корзины'
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='favorite',
-        verbose_name='рецепт',
-        help_text='рецепт пользователя'
-    )
-    pub_date = models.DateField(
-        auto_now_add=True,
-        verbose_name='Дата добавления',
-        help_text='Дата добавления рецепта'
-    )
+# class UserFavorite(models.Model): # переназвать на recepi favorite
+#     """ Модель корзины покупок """
+#     user = models.ForeignKey(
+#         User,
+#         on_delete=models.CASCADE,
+#         related_name='favorite',
+#         blank=False,
+#         verbose_name='Пользователь',
+#         help_text='Пользователь корзины'
+#     )
+#     recipe = models.ForeignKey(
+#         Recipe,
+#         on_delete=models.CASCADE,
+#         related_name='favorite',
+#         verbose_name='рецепт',
+#         help_text='рецепт пользователя'
+#     )
+#     pub_date = models.DateField(
+#         auto_now_add=True,
+#         verbose_name='Дата добавления',
+#         help_text='Дата добавления рецепта'
+#     )
 
-    class Meta:
-        verbose_name = 'Список избранного'
-        verbose_name_plural = 'Списки избранного'
-        # constraints = UniqueConstraint(
-        #     fields=['user', 'recipe'],
-        #     name='userfavorite'
-        # )
+#     class Meta:
+#         verbose_name = 'Список избранного'
+#         verbose_name_plural = 'Списки избранного'
+#         # constraints = UniqueConstraint(
+#         #     fields=['user', 'recipe'],
+#         #     name='userfavorite'
+#         # )
 
-    def __str__(self):
-        return f"{self.user} добавил в избранное {self.recipe}"
+#     def __str__(self):
+#         return f"{self.user} добавил в избранное {self.recipe}"

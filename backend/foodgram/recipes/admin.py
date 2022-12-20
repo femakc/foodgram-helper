@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Recipe, Ingredient, Tags, IngredientProperty, UserShopCart
+from .models import Ingredient, IngredientProperty, Recipe, Tags, UserShopCart
+
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = [
@@ -38,6 +39,7 @@ class IngredientPropertyAdmin(admin.ModelAdmin):
     ]
 #     # search_fields = ['text']
 #     empty_value_display = '-пусто-'
+
 
 class TagsAdmin(admin.ModelAdmin):
     list_display = [

@@ -1,42 +1,34 @@
-import jwt
-
-from datetime import datetime, timedelta
-
-from django.conf import settings 
-from django.contrib.auth.models import (
-	AbstractBaseUser,
-    BaseUserManager,
-    PermissionsMixin
-)
-
+from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
+                                        PermissionsMixin)
 from django.db import models
 
 from foodgram.settings import ROLES_CHOICES
 
+
 class UserManager(BaseUserManager):
-    """
-    Django требует, чтобы кастомные пользователи определяли свой собственный
-    класс Manager. Унаследовавшись от BaseUserManager, мы получаем много того
-    же самого кода, который Django использовал для создания User (для демонстрации).
-    """
+    """ Manager для создания User. """
 
     def create_user(self, username, email, password=None, **extra_fields):
         """ Создает и возвращает пользователя с имэйлом, паролем и именем. """
         if username is None:
-            raise TypeError('Users must have a username.')
+            raise TypeError('Пользователи должны иметь имя пользователя.')
 
         if email is None:
-            raise TypeError('Users must have an email address.')
-        user = self.model(username=username, email=self.normalize_email(email), **extra_fields)
+            raise TypeError('пользователи должны иметь email.')
+        user = self.model(
+            username=username,
+            email=self.normalize_email(email),
+            **extra_fields
+        )
         user.set_password(password)
         user.save()
 
         return user
 
     def create_superuser(self, username, email, password):
-        """ Создает и возввращет пользователя с привилегиями суперадмина. """
+        """ Создаём суперпользователя. """
         if password is None:
-            raise TypeError('Superusers must have a password.')
+            raise TypeError('У Суперпользователя должен быть пароль.')
 
         user = self.create_user(username, email, password)
         user.is_superuser = True
@@ -45,7 +37,10 @@ class UserManager(BaseUserManager):
 
         return user
 
+
 class User(AbstractBaseUser, PermissionsMixin):
+    """ Модель пользователя"""
+
     username = models.CharField(
         db_index=True,
         max_length=150,
@@ -103,14 +98,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
-    @property
-    def token(self):
-        """
-        Позволяет получить токен пользователя путем вызова user.token, вместо
-        user._generate_jwt_token(). Декоратор @property выше делает это
-        возможным. token называется "динамическим свойством".
-        """
-        return self._generate_jwt_token()
+    # @property
+    # def token(self):
+    #     """
+    #     Позволяет получить токен пользователя путем вызова user.token, вместо
+    #     user._generate_jwt_token(). Декоратор @property выше делает это
+    #     возможным. token называется "динамическим свойством".
+    #     """
+    #     return self._generate_jwt_token()
 
     def get_full_name(self):
         return f"{self.last_name} {self.first_name}"
@@ -118,17 +113,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.username
 
-    def _generate_jwt_token(self):
-        dt = datetime.now() + timedelta(days=1)
+    # def _generate_jwt_token(self):
+    #     dt = datetime.now() + timedelta(days=1)
 
-        token = jwt.encode({
-            'id': self.pk,
-            'exp': int(dt.strftime('%s'))
-        }, settings.SECRET_KEY, algorithm='HS256')
+    #     token = jwt.encode({
+    #         'id': self.pk,
+    #         'exp': int(dt.strftime('%s'))
+    #     }, settings.SECRET_KEY, algorithm='HS256')
 
-        return token.decode('utf-8')
+    #     return token.decode('utf-8')
+
 
 class Follow(models.Model):
+    """ Модель подписки на Авторов"""
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -146,31 +144,3 @@ class Follow(models.Model):
 
     def __str__(self):
         return "Подписка на автора"
-
-# from django.contrib.auth import get_user_model
-
-# class EmailBackend(object):
-#     """
-#     Custom Email Backend to perform authentication via email
-#     """
-#     def authenticate(self, username=None, password=None):
-#         user_model = get_user_model() 
-#         try:
-#             user = user_model.objects.get(email=username)
-#             if user.check_password(password): # check valid password
-#                 return user # return user to be authenticated
-#         except user_model.DoesNotExist: # no matching user exists 
-#             return None 
-
-#     def get_user(self, user_id):
-#         user_model = get_user_model() 
-#         try:
-#             return user_model.objects.get(pk=user_id)
-#         except user_model.DoesNotExist:
-#             return None
-
-# # settings.py
-# AUTHENTICATION_BACKENDS = (
-#     'my_app.backends.EmailBackend', 
-#     ... 
-#     )
