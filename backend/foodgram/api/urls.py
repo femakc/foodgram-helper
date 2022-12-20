@@ -28,8 +28,10 @@ urlpatterns = [
     # path('users/', UsersApiView.as_view()),
     # path('users/me/', UserApiView.as_view()),
     # path('', include('djoser.urls')),
-    path('auth/token/login/', GetToken.as_view(), name='login_token'),
-    path('auth/token/logout/', APILogoutView.as_view(), name='logout_token'),
+    # path('auth/token/login/', GetToken.as_view(), name='login_token'),
+    # path('auth/token/logout/', APILogoutView.as_view(), name='logout_token'),
+    # path('auth/', include('djoser.urls')),          # new
+    path('auth/', include('djoser.urls.authtoken')),
     # path('auth/token/logout/', User_logout),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),

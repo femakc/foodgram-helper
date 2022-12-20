@@ -89,7 +89,7 @@ class Recipe(models.Model):
         help_text='Название рецепта'
     )
     image = models.ImageField(
-        blank=True, # для тестов True, на прод поставить False
+        blank=False, # для тестов True, на прод поставить False
         verbose_name='Изображение',
         help_text='Изображение рецепта'
     )

@@ -108,8 +108,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
     def to_internal_value(self, data) -> dict:
         decode_data = data.get('image')
         image_data = b64decode(decode_data.split(',')[1])
-        image = ContentFile(image_data, 'image.jpg')
-        # author = self.context.get('request').user
+        image = ContentFile(image_data, 'backend-static/image.jpg')
         cooking_time = data.get('cooking_time')
         is_favorited = data.get('is_favorited')
         is_in_shopping_cart = data.get('is_in_shopping_cart')
@@ -234,7 +233,9 @@ class ShopingCardSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'image',
-            'cooking_time'
+            'cooking_time',
+            # 'is_in_shopping_cart',
+            # 'is_favorited'
         ]
 
 class TokenSerializer(TokenObtainPairSerializer):
@@ -326,7 +327,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
-            # 'is_subscribed',
+            'is_subscribed',
             'password',
         ]
         # exclude = ['password']

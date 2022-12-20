@@ -24,7 +24,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.db.models import Count
 
 
-class APILogoutView(APIView): # Проверить как работает logout
+class APILogoutView(APIView): # Получение токена без Dloser !!!! Убрать если будет не нужен 
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
@@ -49,7 +49,7 @@ class APILogoutView(APIView): # Проверить как работает logou
         # return Response({"status": "OK, goodbye"})
 
 
-class GetToken(TokenObtainPairView):
+class GetToken(TokenObtainPairView): # получение токена БЕЗ Dloser !!
     serializer_class = TokenSerializer
 
     def post(self, request, *args, **kwargs):
@@ -81,8 +81,6 @@ class UserVievSet(
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
-    # search_fields = ['username']
-    # lookup_field = "username"
 
     @action(
         detail=False,
