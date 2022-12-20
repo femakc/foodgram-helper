@@ -38,3 +38,12 @@ class RecipeVievSet(viewsets.ModelViewSet):
     #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     
+class IngredientVievSet(
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Ingredient.objects.all()
+    permission_classes = [AllowAny,]
+    serializer_class = IngredientSerializer
+    # реализовать поис по условию ! !!!!!!!!!!!!
