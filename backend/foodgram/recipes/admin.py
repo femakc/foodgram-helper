@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Recipe, Ingredient, Tag, IngredientProperty
+from .models import Recipe, Ingredient, Tags, IngredientProperty, UserShopCart
 
 class RecipeAdmin(admin.ModelAdmin):
     list_display = [
@@ -10,7 +10,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'image',
         'text',
         # 'ingredient',  как отобразить ManyToMany в админке
-        # 'tag',
+        # 'tags',
         'cooking_time'
     ]
     search_fields = ['text']
@@ -39,7 +39,7 @@ class IngredientPropertyAdmin(admin.ModelAdmin):
 #     # search_fields = ['text']
 #     empty_value_display = '-пусто-'
 
-class TagAdmin(admin.ModelAdmin):
+class TagsAdmin(admin.ModelAdmin):
     list_display = [
         'pk',
         'name',
@@ -49,7 +49,17 @@ class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     # search_fields = ['name']
 
+
+class ShopListAdmin(admin.ModelAdmin):
+    list_display = [
+        'user',
+        'recipe',
+        'pub_date'
+    ]
+
+
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(IngredientProperty, IngredientPropertyAdmin)
-admin.site.register(Tag, TagAdmin)
+admin.site.register(Tags, TagsAdmin)
+admin.site.register(UserShopCart, ShopListAdmin)

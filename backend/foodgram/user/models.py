@@ -60,27 +60,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name='Адрес электронной почты',
         help_text='email пользователя'
     )
-    # password = models.CharField(
-    #     max_length=150,
-    #     verbose_name='Пароль',
-    #     help_text='Пароль пользователя'
-    # )
     first_name = models.CharField(
         max_length=150,
+        blank=False,
+        default='--пусто--',
         verbose_name='Имя',
         help_text='Имя пользователя'
     )
     last_name = models.CharField(
         max_length=150,
+        blank=False,
+        default='--пусто--',
         verbose_name='Фамилия',
         help_text='Фамилия пользователя'
     )
-    # Когда пользователь более не желает пользоваться нашей системой, он может
-    # захотеть удалить свой аккаунт. Для нас это проблема, так как собираемые
-    # нами данные очень ценны, и мы не хотим их удалять :) Мы просто предложим
-    # пользователям способ деактивировать учетку вместо ее полного удаления.
-    # Таким образом, они не будут отображаться на сайте, но мы все еще сможем
-    # далее анализировать информацию.
     is_active = models.BooleanField(default=True)
 
     is_staff = models.BooleanField(default=False)
@@ -108,7 +101,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        """ Строковое представление модели (отображается в консоли) """
         return self.username
 
     @property
@@ -136,6 +128,24 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         return token.decode('utf-8')
 
+class Follow(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+        verbose_name="Подписчик",
+        help_text='тот кто подписывается ',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+        verbose_name="Автор рецепта",
+        help_text='тот на кого подписываются',
+    )
+
+    def __str__(self):
+        return "Подписка на автора"
 
 # from django.contrib.auth import get_user_model
 

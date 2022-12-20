@@ -3,6 +3,7 @@ from django.db import models
 from foodgram.settings import COLOR_CHOICES, TAG_CHOICES
 # from user.models import User
 from foodgram.settings import AUTH_USER_MODEL
+from django.db.models.constraints import UniqueConstraint
 
 User = AUTH_USER_MODEL
 # User = get_user_model()
@@ -22,11 +23,7 @@ class Ingredient(models.Model):
         verbose_name='Единица измерения',
         help_text='Единица измерения ингредиента'
     )
-    # amount = models.PositiveSmallIntegerField(
-    #     blank=False,
-    #     verbose_name='Количество',
-    #     help_text='Количество ингредиента'
-    # )
+
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
@@ -35,8 +32,8 @@ class Ingredient(models.Model):
         return f'{self.name}'
 
 
-class Tag(models.Model):
-    """ Описание модели Tag """
+class Tags(models.Model):
+    """ Описание модели Tags """
 
     name = models.CharField(
         max_length=64,
@@ -64,7 +61,6 @@ class Tag(models.Model):
     )
 
     def save(self, *args, **kwargs) -> None: # Сделать анотирование !!!!
-        # print(self.slug)
         self.color = COLOR_CHOICES[self.slug]
         return super().save(*args, **kwargs)
 
@@ -111,9 +107,9 @@ class Recipe(models.Model):
         verbose_name='Ингредиент',
         help_text='Ингредиент рецепта'
     )
-    tag = models.ManyToManyField(
-        Tag,
-        through='TagProperty',
+    tags = models.ManyToManyField(
+        Tags,
+        through='TagsProperty',
         verbose_name='Тег',
         help_text='Тег рецепта'
     )
@@ -164,13 +160,13 @@ class IngredientProperty(models.Model):
         return f'{self.ingredient}'
 
 
-class TagProperty(models.Model):
+class TagsProperty(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
     )
-    tag = models.ForeignKey(
-        Tag,
+    tags = models.ForeignKey(
+        Tags,
         on_delete=models.CASCADE
     )
     class Meta:
@@ -178,4 +174,73 @@ class TagProperty(models.Model):
         verbose_name_plural = 'Свойства тега'
 
     def __str__(self):
-        return f'{self.tag}'
+        return f'{self.tags}'
+
+class UserShopCart(models.Model):
+    """ Модель корзины покупок """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorit',
+        blank=False,
+        verbose_name='Пользователь',
+        help_text='Пользователь корзины'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='usershopcart',
+        verbose_name='рецепт',
+        help_text='рецепт пользователя'
+    )
+    pub_date = models.DateField(
+        auto_now_add=True,
+        verbose_name='Дата добавления',
+        help_text='Дата добавления рецепта'
+    )
+
+    class Meta:
+        verbose_name = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
+        # constraints = UniqueConstraint(
+        #     fields=['user', 'recipe'],
+        #     name='usershopcart'
+        # )
+
+    def __str__(self):
+        return f"{self.user} добавил в список покупок {self.recipe}"
+
+
+class UserFavorite(models.Model): # переназвать на recepi favorite
+    """ Модель корзины покупок """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorite',
+        blank=False,
+        verbose_name='Пользователь',
+        help_text='Пользователь корзины'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorite',
+        verbose_name='рецепт',
+        help_text='рецепт пользователя'
+    )
+    pub_date = models.DateField(
+        auto_now_add=True,
+        verbose_name='Дата добавления',
+        help_text='Дата добавления рецепта'
+    )
+
+    class Meta:
+        verbose_name = 'Список избранного'
+        verbose_name_plural = 'Списки избранного'
+        # constraints = UniqueConstraint(
+        #     fields=['user', 'recipe'],
+        #     name='userfavorite'
+        # )
+
+    def __str__(self):
+        return f"{self.user} добавил в избранное {self.recipe}"

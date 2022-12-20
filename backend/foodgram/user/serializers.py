@@ -1,9 +1,11 @@
-from rest_framework import serializers, exceptions, status
+from rest_framework import serializers# , exceptions, status
 from rest_framework.validators import UniqueTogetherValidator
 from collections import OrderedDict
 from  django.contrib.auth.hashers import make_password
 
 from .models import User
+# from foodgram.recipes.models import Recipe
+# from recipes.serializers import ShopingCardSerializer
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -20,6 +22,7 @@ class TokenSerializer(TokenObtainPairSerializer):
         del data['access']
 
         return data
+
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """ Сериализация регистрации пользователя и создания нового. """
@@ -127,3 +130,24 @@ class SetPasswordSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['new_password', 'current_password']
+
+
+# class UserFavoriteSerializer(serializers.ModelSerializer):
+#     recipes = ShopingCardSerializer()
+#     recipes_count = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = User
+#         fields = [
+#             'email',
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'is_subscribed',
+#             'recipes',
+#             'recipes_count'
+#         ]
+
+#     def get_recipes_count(self, obj):
+#         return obj.recipes.count()

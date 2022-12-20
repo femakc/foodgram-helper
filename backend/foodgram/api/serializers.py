@@ -1,11 +1,20 @@
+from rest_framework import serializers# , exceptions, status
+from rest_framework.validators import UniqueTogetherValidator
+from collections import OrderedDict
+from  django.contrib.auth.hashers import make_password
 from rest_framework import serializers, exceptions, status
-from .models import Tags, Recipe, Ingredient, IngredientProperty, TagsProperty, UserShopCart
+from recipes.models import Tags, Recipe, Ingredient, IngredientProperty, TagsProperty, UserShopCart
 import webcolors
 from foodgram.settings import R_CHOICES
 from user.serializers import UserSerializer
 import base64
-import io
-from PIL import Image
+from user.models import User, Follow
+# from foodgram.recipes.models import Recipe
+# from recipes.serializers import ShopingCardSerializer
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+# import io
+# from PIL import Image
 
 from base64 import b64decode
 from django.core.files.base import ContentFile
@@ -226,4 +235,187 @@ class ShopingCardSerializer(serializers.ModelSerializer):
             'name',
             'image',
             'cooking_time'
+        ]
+
+class TokenSerializer(TokenObtainPairSerializer):
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        refresh = self.get_token(self.user)
+
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        data['auth_token'] = {'auth_token': data['access']}
+
+
+        return data['auth_token']
+
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    """ Сериализация регистрации пользователя и создания нового. """
+    # email = serializers.EmailField()
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+    token = serializers.CharField(max_length=255, read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password',
+            'token',
+            'is_subscribed'
+        ]
+
+    def validate(self, data):
+        if data['username'].lower() == 'me':
+            raise serializers.ValidationError(
+                "Имя пользователя не может быть 'me' "
+            )
+        user = User.objects.filter(email=data['email'])
+        if user.exists():
+            username = User.objects.filter(
+                username=data['username'],
+                email=data['email']
+            )   
+            # if username.exists():
+            #     send_message(data['username'])
+            # else:
+            #     raise serializers.ValidationError(
+            #         "user не соответствует email"
+            #     )
+        else:
+            username = User.objects.filter(username=data['username'])
+            if username.exists():
+                raise serializers.ValidationError(
+                    "email не соответствует User "
+                )
+
+        return data
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """ Сериализаторор для модели User."""
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+
+    def create(self, validated_data):
+        password = validated_data['password']
+        validated_data['password'] = make_password(password)
+        return super().create(validated_data)
+
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            # 'is_subscribed',
+            'password',
+        ]
+        # exclude = ['password']
+        validators = [
+            UniqueTogetherValidator(
+                queryset=User.objects.all(),
+                fields=('username', 'email'),
+                message='Имя пользователя или email уже используются'
+            )
+        ]
+
+
+class SetPasswordSerializer(serializers.ModelSerializer):
+    new_password = serializers.CharField(
+        required=True,
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+    current_password = serializers.CharField(
+        required=True,
+        max_length=128,
+        min_length=8,
+        write_only=True
+    )
+    class Meta:
+        model = User
+        fields = ['new_password', 'current_password']
+
+    def validate(self, attrs):
+        if attrs['new_password'] == attrs['current_password']:
+            raise serializers.ValidationError("новый и старый пароли идентичны")
+        return super().validate(attrs)
+
+class UserSubscribtionsSerializer(serializers.ModelSerializer):
+    recipes = ShopingCardSerializer(many=True)
+    recipes_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+
+
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        ]
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+
+    def get_is_subscribed(self, obj):
+        user = self.context.get('user')
+        author = Follow.objects.filter(user=user, author=obj).exists()
+        return author
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        author = User.objects.get(username=self.context.get('author'))
+        instance.email = author.email
+        return instance
+
+class FollowSerializer(serializers.ModelSerializer):
+    result = UserSubscribtionsSerializer()
+    # author = UserSerializer()
+    class Meta:
+        model = Follow
+        fields = "__all__"
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = "__all__"
+
+class UsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
         ]
