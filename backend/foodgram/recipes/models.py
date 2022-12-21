@@ -207,38 +207,3 @@ class UserShopCart(models.Model):
 
     def __str__(self):
         return f"{self.user} добавил в список покупок {self.recipe}"
-
-
-# class UserFavorite(models.Model): # переназвать на recepi favorite
-#     """ Модель корзины покупок """
-#     user = models.ForeignKey(
-#         User,
-#         on_delete=models.CASCADE,
-#         related_name='favorite',
-#         blank=False,
-#         verbose_name='Пользователь',
-#         help_text='Пользователь корзины'
-#     )
-#     recipe = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE,
-#         related_name='favorite',
-#         verbose_name='рецепт',
-#         help_text='рецепт пользователя'
-#     )
-#     pub_date = models.DateField(
-#         auto_now_add=True,
-#         verbose_name='Дата добавления',
-#         help_text='Дата добавления рецепта'
-#     )
-
-#     class Meta:
-#         verbose_name = 'Список избранного'
-#         verbose_name_plural = 'Списки избранного'
-#         # constraints = UniqueConstraint(
-#         #     fields=['user', 'recipe'],
-#         #     name='userfavorite'
-#         # )
-
-#     def __str__(self):
-#         return f"{self.user} добавил в избранное {self.recipe}"

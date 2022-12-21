@@ -98,30 +98,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
-    # @property
-    # def token(self):
-    #     """
-    #     Позволяет получить токен пользователя путем вызова user.token, вместо
-    #     user._generate_jwt_token(). Декоратор @property выше делает это
-    #     возможным. token называется "динамическим свойством".
-    #     """
-    #     return self._generate_jwt_token()
-
     def get_full_name(self):
         return f"{self.last_name} {self.first_name}"
 
     def get_short_name(self):
         return self.username
-
-    # def _generate_jwt_token(self):
-    #     dt = datetime.now() + timedelta(days=1)
-
-    #     token = jwt.encode({
-    #         'id': self.pk,
-    #         'exp': int(dt.strftime('%s'))
-    #     }, settings.SECRET_KEY, algorithm='HS256')
-
-    #     return token.decode('utf-8')
 
 
 class Follow(models.Model):
