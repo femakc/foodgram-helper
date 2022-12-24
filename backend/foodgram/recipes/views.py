@@ -1,149 +1,148 @@
-import os
+# import os
 
-from django.db.models import Sum
-from django.shortcuts import HttpResponse
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import mixins
+# from django.db.models import Sum
+# from django.shortcuts import HttpResponse, get_object_or_404
+# from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework import filters, status, viewsets
+# from rest_framework.decorators import action
+# from rest_framework.permissions import AllowAny, IsAuthenticated
+# from rest_framework.response import Response
+# from rest_framework.viewsets import mixins
 
-from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (IngredientSerializer, RecipeSerialzer,
-                             ShopingCardSerializer, TagsSerializer)
-from foodgram.settings import BASE_DIR
+# from api.permissions import IsAuthorOrReadOnly
+# from api.serializers import (IngredientSerializer, RecipeSerialzer,
+#                              ShopingCardSerializer, TagsSerializer, CreateRecipeSerialzer)
+# from foodgram.settings import BASE_DIR
+# from recipes.utilits import make_send_file
 
-from .models import (
-    Ingredient,
-    IngredientProperty,
-    Recipe,
-    Tags,
-    UserShopCart
-)
+# # from django.shortcuts import get_list_or_404, get_object_or_404
 
-
-class TagsViewSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
-    """ Обработчик модели Tags """
-    queryset = Tags.objects.all()
-    serializer_class = TagsSerializer
-    permission_classes = [AllowAny,]
-    pagination_class = None
+# from .models import (
+#     Ingredient,
+#     IngredientProperty,
+#     Recipe,
+#     Tags,
+#     UserShopCart,
+#     Favorite
+# )
 
 
-class IngredientVievSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
-    """ Обработчик модели Ingredient """
-    queryset = Ingredient.objects.all()
-    permission_classes = [AllowAny,]
-    serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ['name',]
+# class TagsViewSet(
+#     mixins.RetrieveModelMixin,
+#     mixins.ListModelMixin,
+#     viewsets.GenericViewSet
+# ):
+#     """ Обработчик модели Tags """
+#     queryset = Tags.objects.all()
+#     serializer_class = TagsSerializer
+#     permission_classes = [AllowAny,]
+#     pagination_class = None
 
 
-class RecipeVievSet(viewsets.ModelViewSet):
-    """ Обработчик модели Recipe """
-    queryset = Recipe.objects.all()
-    serializer_class = RecipeSerialzer
-    permission_classes = (IsAuthorOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = (
-        'is_favorited',
-        'author',
-        'is_in_shopping_cart',
-        'tags'
-    )
+# class IngredientVievSet(
+#     mixins.RetrieveModelMixin,
+#     mixins.ListModelMixin,
+#     viewsets.GenericViewSet
+# ):
+#     """ Обработчик модели Ingredient """
+#     queryset = Ingredient.objects.all()
+#     permission_classes = [AllowAny,]
+#     serializer_class = IngredientSerializer
+#     filter_backends = (filters.SearchFilter,)
+#     search_fields = ['name',]
 
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=[IsAuthenticated],
-        name='download_shopping_cart'
-    )
-    def download_shopping_cart(self, request):
-        """ Скачать файл со списком ингредиентов """
-        ingredient = IngredientProperty.objects.filter(
-            recipe__usershopcart__user=request.user
-        ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
 
-        shop_list_file = open('shop_list_file.txt', 'w')
-        for i in ingredient:
-            shop_list_file.write("\n")
-            for key, value in i.items():
-                shop_list_file.write(f'{key} - {value}\n')
+# class RecipeVievSet(viewsets.ModelViewSet):
+#     """ Обработчик модели Recipe """
+#     queryset = Recipe.objects.all()
+#     # serializer_class = RecipeSerialzer
+#     permission_classes = (IsAuthorOrReadOnly,)
+#     filter_backends = (DjangoFilterBackend,)
+#     filterset_fields = (
+#         # 'is_favorited',
+#         'author',
+#         # 'is_in_shopping_cart',
+#         'tags'
+#     )         #  Сделать фильтерсет!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        shop_list_file.close()
-        my_file = os.path.join(BASE_DIR, 'shop_list_file.txt')
-        with open(my_file, 'r') as f:
-            file_data = f.read()
 
-        return HttpResponse(file_data, status=status.HTTP_200_OK)
+#     def get_serializer_class(self):
+#         if self.request.method == 'GET':
+#             return RecipeSerialzer
+#         return CreateRecipeSerialzer
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated],
-        name='shopping_cart'
-    )
-    def shopping_cart(self, request, pk=None, field='cart'):
-        """ Обработка запросов на добавление в избранное и корзину """
-        if field == 'cart':
-            request.data['is_in_shopping_cart'] = True
-        elif field == 'favorite':
-            request.data['is_favorited'] = True
-        if Recipe.objects.filter(pk=pk).exists():
-            user = request.user
-            recipe = Recipe.objects.get(pk=pk)
-            shop_cart_model = UserShopCart.objects.get_or_create(
-                user=user,
-                recipe=recipe
-            )
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context.update({'request': self.request})
+#         return context
 
-            if request.method == "POST":
-                shop_cart_model[0].recipe.is_in_shopping_cart = True
-                shop_cart_model[0].save()
-                cart_recipe = Recipe.objects.get(
-                    pk=shop_cart_model[0].recipe.id
-                )
-                request.data['name'] = cart_recipe.name
-                request.data['cooking_time'] = cart_recipe.cooking_time
-                request.data['image'] = cart_recipe.image
-                serializer = ShopingCardSerializer(recipe, data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response(
-                        serializer.data,
-                        status=status.HTTP_201_CREATED
-                    )
-                return Response(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            if request.method == 'DELETE':
-                UserShopCart.objects.get(user=user, recipe=recipe).delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            {'errors': 'нет такого рецепта'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+#     @action(
+#         detail=False,
+#         methods=['get'],
+#         permission_classes=[IsAuthenticated],
+#         name='download_shopping_cart'
+#     )
+#     def download_shopping_cart(self, request):
+#         """ Скачать файл со списком ингредиентов """
+#         ingredient = IngredientProperty.objects.filter(
+#             recipe__usershopcart__user=request.user
+#         ).values(
+#             'ingredient__name',
+#             'ingredient__measurement_unit'
+#         ).annotate(amount=Sum('amount'))
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated],
-        name='favorite'
-    )
-    def favorite(self, request, pk=None):
-        """ обработчик запросов по url .../favorite/"""
-        favorite = 'favorite'
-        return self.shopping_cart(request, pk, favorite)
+#         file_data = make_send_file(ingredient)
+#         return HttpResponse(file_data, status=status.HTTP_200_OK)
+
+#     @action(
+#         detail=True,
+#         methods=['post', 'delete'],
+#         permission_classes=[IsAuthenticated],
+#         name='shopping_cart'
+#     )
+#     def shopping_cart(self, request, pk=None, cart_or_fav=None):
+#         """ Обработка запросов на добавление в избранное и корзину """
+               
+#         user = request.user
+#         recipe = get_object_or_404(Recipe, pk=pk)
+#         in_shop_cart = UserShopCart.objects.filter(
+#             user=user,
+#             recipe=recipe
+#         )
+
+#         if request.method == "POST":
+#             if cart_or_fav == 'Favorite':
+#                 Favorite.objects.create(
+#                 user=user,
+#                 recipe=recipe
+#                 )
+#             UserShopCart.objects.create(
+#             user=user,
+#             recipe=recipe
+#             )
+#             serializer = ShopingCardSerializer(recipe)
+#             return Response(
+#                 serializer.data,
+#                 status=status.HTTP_201_CREATED
+#             )
+        
+#         elif request.method == 'DELETE':
+#             # UserShopCart.objects.get(user=user, recipe=recipe).delete()
+#             in_shop_cart.delete()
+#             return Response(status=status.HTTP_204_NO_CONTENT)
+
+#         return Response(
+#             serializer.errors,
+#             status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#     @action(
+#         detail=True,
+#         methods=['post', 'delete'],
+#         permission_classes=[IsAuthenticated],
+#         name='favorite'
+#     )
+#     def favorite(self, request, pk=None):
+#         """ обработчик запросов по url .../favorite/"""
+#         favorite = 'favorite' 
+#         return self.shopping_cart(request, pk, favorite)

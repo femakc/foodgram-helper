@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import Follow, User
 
-
+@admin.register(User)
 class UserAdmin(admin.ModelAdmin):
 
     list_display = [
@@ -11,20 +11,17 @@ class UserAdmin(admin.ModelAdmin):
         'email',
         'first_name',
         'is_active',
-        'is_staff',
+        # 'is_staff',
         'last_name',
         'is_subscribed',
-        'role',
-        'created_at'
+        # 'role',
+        # 'created_at'
     ]
     search_fields = ['email']
-    list_filter = ['created_at']
+    # list_filter = ['created_at']
     empty_value_display = '-пусто-'
 
 
+@admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = ['user', 'author']
-
-
-admin.site.register(User, UserAdmin)
-admin.site.register(Follow, FollowAdmin)

@@ -1,9 +1,17 @@
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
-                                        PermissionsMixin)
+                                        PermissionsMixin, AbstractUser)
 from django.db import models
 
-from foodgram.settings import ROLES_CHOICES
+# from foodgram.settings import ROLES_CHOICES
 
+ANON = 'anon'
+USER = 'user'
+ADMIN = 'admin'
+ROLES_CHOICES = [
+    (ANON, 'Аноним'),
+    (USER, 'Аутентифицированный пользователь'),
+    (ADMIN, 'Администратор'),
+]
 
 class UserManager(BaseUserManager):
     """ Manager для создания User. """
@@ -37,7 +45,51 @@ class UserManager(BaseUserManager):
 
         return user
 
+# class User(AbstractUser):
+#     """Модель пользователя."""
 
+#     email = models.EmailField(
+#         verbose_name='Почта',
+#         max_length=256,
+#         unique=True
+#     )
+#     username = models.CharField(
+#         verbose_name="Логин",
+#         max_length=150,
+#         unique=True,
+#     )
+#     first_name = models.CharField(
+#         verbose_name='Имя',
+#         max_length=256
+#     )
+#     last_name = models.CharField(
+#         verbose_name='Фамилия',
+#         max_length=256
+#     )
+#     password = models.CharField(
+#         max_length=150,
+#         verbose_name="Пароль",
+#     )
+#     is_subscribed = models.BooleanField(
+#         default=False,
+#         verbose_name="Подписка"
+#     )
+
+#     USERNAME_FIELD = "email"
+#     REQUIRED_FIELDS = ["username", "first_name", "last_name", "password"]
+
+#     class Meta:
+#         verbose_name = 'Пользователь'
+#         verbose_name_plural = 'Пользователи'
+#         constraints = [
+#             models.UniqueConstraint(
+#                 fields=['username', 'email'],
+#                 name='unique_username_email'
+#             )
+#         ]
+
+#     def __str__(self):
+#         return f'{self.first_name} {self.last_name}'
 class User(AbstractBaseUser, PermissionsMixin):
     """ Модель пользователя"""
 
@@ -95,6 +147,16 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['username', 'email'],
+                name='unique_username_email'
+            )
+        ]
+
     def __str__(self):
         return self.username
 
@@ -122,6 +184,16 @@ class Follow(models.Model):
         verbose_name="Автор рецепта",
         help_text='тот на кого подписываются',
     )
+
+    class Meta:
+        verbose_name = 'Подписчик'
+        verbose_name_plural = 'Подписчики'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'user'],
+                name='unique_author_user'
+            )
+        ]
 
     def __str__(self):
         return "Подписка на автора"
