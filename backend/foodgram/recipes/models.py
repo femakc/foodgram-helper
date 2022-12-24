@@ -1,9 +1,10 @@
-from django.db import models
-from django.db.models import UniqueConstraint
-from foodgram.settings import AUTH_USER_MODEL
-from foodgram.common import COLOR_CHOICES, TAG_CHOICES
 from colorfield.fields import ColorField
 from django.core.validators import MinValueValidator
+from django.db import models
+from django.db.models import UniqueConstraint
+
+from foodgram.common import COLOR_CHOICES, TAG_CHOICES
+from foodgram.settings import AUTH_USER_MODEL
 
 User = AUTH_USER_MODEL
 
@@ -68,6 +69,7 @@ class Tags(models.Model):
         self.color = COLOR_CHOICES[self.slug]
         return super().save(*args, **kwargs)
 
+
 class Recipe(models.Model):
     """ Описание модели Recipe """
 
@@ -116,7 +118,10 @@ class Recipe(models.Model):
         verbose_name='Время приготовления',
         help_text='Время приготовления рецепта',
         default=0,
-        validators=[MinValueValidator(1, 'Время приготовления должно быть больше 1 минуты.')]
+        validators=[MinValueValidator(
+            1,
+            'Время приготовления должно быть больше 1 минуты.'
+        )]
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -160,7 +165,7 @@ class IngredientProperty(models.Model):
     class Meta:
         verbose_name = 'Свойство ингредиент'
         verbose_name_plural = 'Свойства ингредиентов'
-        
+
         constraints = [
             UniqueConstraint(
                 fields=['recipe', 'ingredient'],

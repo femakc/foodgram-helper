@@ -1,20 +1,14 @@
 import webcolors
 from django.contrib.auth.hashers import make_password
 from django.core.validators import MinValueValidator
-from rest_framework import serializers
 from django.db import transaction
-from foodgram.common import R_CHOICES
-from recipes.models import (
-    Ingredients,
-    IngredientProperty,
-    Recipe,
-    Tags,
-    TagsProperty,
-    UserShopCart,
-    Favorite
-)
-from user.models import Follow, User
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
+
+from foodgram.common import R_CHOICES
+from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
+                            Tags, TagsProperty, UserShopCart)
+from user.models import Follow, User
 
 
 class Hex2NameColor(serializers.Field):
@@ -79,6 +73,7 @@ class IngredientsSerializer(serializers.ModelSerializer):
         ]
 
 
+@transaction.atomic
 class UserSerializer(serializers.ModelSerializer):
     """ Сериализаторор для модели User."""
     password = serializers.CharField(
@@ -106,7 +101,6 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
-
 class RecipeSerialzer(serializers.ModelSerializer):
 
     tags = TagsSerializer(many=True)
@@ -118,16 +112,16 @@ class RecipeSerialzer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = [
-        'id',
-        'tags',
-        'author',
-        'ingredients',
-        'is_favorited',
-        'is_in_shopping_cart',
-        'name',
-        'image',
-        'text',
-        'cooking_time'
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
         ]
 
     def get_ingredients(self, obj):
@@ -198,15 +192,12 @@ class CreateRecipeSerialzer(serializers.ModelSerializer):
         bulk_ingredient_list = [
             IngredientProperty(
                 recipe=recipe,
-                ingredient=Ingredients.objects.get(
-                pk=ingredient_data['id']
-            ),
+                ingredient=Ingredients.objects.get(pk=ingredient_data['id']),
                 amount=ingredient_data['amount']
             )
             for ingredient_data in ingredients
         ]
         IngredientProperty.objects.bulk_create(bulk_ingredient_list)
-
 
     @transaction.atomic
     def create_tags(self, tags, recipe):
@@ -222,10 +213,8 @@ class CreateRecipeSerialzer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         validated_data['author'] = self.context.get('request').user
         recipe = super().create(validated_data)
-        # recipe = Recipe.objects.create(**validated_data)
         self.create_ingredients(ingredients, recipe)
         self.create_tags(tags, recipe)
-        # recipe.save()
         return recipe
 
     @transaction.atomic
@@ -261,6 +250,7 @@ class ShopingCardSerializer(serializers.ModelSerializer):
         ]
 
 
+@transaction.atomic
 class RegistrationSerializer(serializers.ModelSerializer):
     """ Сериализация регистрации пользователя и создания нового. """
 
@@ -327,10 +317,10 @@ class SetPasswordSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
+@transaction.atomic
 class UserSubscribtionsSerializer(serializers.ModelSerializer):
     """ Сериализатор эндпойнта UserSubscribtions. """
 
-    # recipes = ShopingCardSerializer(many=True)
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
@@ -349,12 +339,11 @@ class UserSubscribtionsSerializer(serializers.ModelSerializer):
         ]
 
     def get_recipes(self, obj):
-        # user = self.request.user
         recipes = Recipe.objects.filter(author_id=obj.id)
         serializer = ShopingCardSerializer(recipes, many=True)
         return serializer.data
 
-    def get_recipes_count(self, obj):  # hfpj,hfnmcz xnj 'nj 
+    def get_recipes_count(self, obj):
         recipes = Recipe.objects.filter(author_id=obj.id)
         return recipes.count()
 
@@ -364,17 +353,7 @@ class UserSubscribtionsSerializer(serializers.ModelSerializer):
             author=obj
         ).exists()
 
-    # def get_is_subscribed(self, obj):
-    #     request = self.context.get('request')
-    #     if request and hasattr(request, 'user'):
-    #         return (request.user.is_authenticated and request.user.follower.filter(follow=obj)
-    #                 .exists())
-    #     return False
-
-    # @transaction.atomic
-    # def create(self, validated_data):
-    #     return super().create(validated_data)
-
+    @transaction.atomic
     def update(self, instance, validated_data):
         author = User.objects.get(username=self.context.get('author'))
         instance.email = author.email

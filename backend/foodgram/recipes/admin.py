@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Ingredients, IngredientProperty, Recipe, Tags, UserShopCart
+from .models import IngredientProperty, Ingredients, Recipe, Tags, UserShopCart
+
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
@@ -13,8 +14,8 @@ class RecipeAdmin(admin.ModelAdmin):
         'cooking_time'
     ]
     search_fields = ['text']
-    # list_filter = ['pub_date']
     empty_value_display = '-пусто-'
+
 
 @admin.register(Ingredients)
 class IngredientAdmin(admin.ModelAdmin):
@@ -24,6 +25,7 @@ class IngredientAdmin(admin.ModelAdmin):
     ]
     search_fields = ['name']
 
+
 @admin.register(IngredientProperty)
 class IngredientPropertyAdmin(admin.ModelAdmin):
     list_display = [
@@ -31,6 +33,7 @@ class IngredientPropertyAdmin(admin.ModelAdmin):
         'ingredient',
         'amount'
     ]
+
 
 @admin.register(Tags)
 class TagsAdmin(admin.ModelAdmin):
@@ -42,6 +45,7 @@ class TagsAdmin(admin.ModelAdmin):
     ]
     prepopulated_fields = {"slug": ("name",)}
 
+
 @admin.register(UserShopCart)
 class ShopListAdmin(admin.ModelAdmin):
     list_display = [
@@ -49,10 +53,3 @@ class ShopListAdmin(admin.ModelAdmin):
         'recipe',
         'pub_date'
     ]
-
-
-# admin.site.register(Recipe, RecipeAdmin)
-# admin.site.register(Ingredient, IngredientAdmin)
-# admin.site.register(IngredientProperty, IngredientPropertyAdmin)
-# admin.site.register(Tags, TagsAdmin)
-# admin.site.register(UserShopCart, ShopListAdmin)

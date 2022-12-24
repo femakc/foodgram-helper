@@ -5,8 +5,8 @@ REST API для проекта Foodgram - «Продуктовый помощн�
 http://адрес Продуктовый помощник
 http://адрес/admin Админ-панель
 СуперПользователь:
-email:     admin@a.ru
-password:  admin
+email:     admin@admin.ru
+password:  adminadmin
 login:     admin
 CI и CD: Включает в себя 4 шага
 example branch parameter
@@ -15,17 +15,17 @@ Tests: автоматический запуск тестов
 Build: обновление образов на Docker Hub
 Deploy: автоматический деплой на боевой сервер при пуше в главную ветку main
 Inform: отправление сообщения в Telegram
-Для реализации проекта используются:              ПРОВЕРИТЬ ВЕРСИИ !!!!!!!!!!
+Для реализации проекта используются:        
 Python 3.7.9
-Django 3.2.15
-Django REST Framework 3.12.4
-gunicorn 20.0.4
+Django 4.1.4
+Django REST Framework 3.14.0
+gunicorn 20.1.0
 psycopg2-binary
 docker
 docker-compose
 Ubuntu 20.04 LTS на сервере
 Подготовка репозитория
-В settings/secrets нужно подготовить ключи:              ПОМЕНЯТЬ ПЕРЕМЕННОЕ ОКРУЖЕНИЕ
+В settings/secrets нужно подготовить ключи:    
 
 - DOCKER_USERNAME - Username для DockerHub
 - DOCKER_PASSWORD - Пароль для DockerHub
@@ -42,7 +42,7 @@ Ubuntu 20.04 LTS на сервере
 Запуск проекта
 Клонировать репозиторий и перейти в него в командной строке:
 
-git clone https://github.com/Denis-Guselnikov/foodgram-project-react      ПОМЕНЯТЬ АДРЕСА !!!!!!!!
+git clone https://github.com/femakc/foodgram-project-react  
 cd foodgram-project-react
 Создать файл .env в infra/ и заполнить необходимыми данными:
 DB_ENGINE=django.db.backends.postgresql # указываем, что работаем с postgresql
@@ -55,11 +55,11 @@ SECRET_KEY=secret_key
 Там же, нужно создать контейнеры:
 docker-compose up -d --build
 Выполните по очереди команды:
-docker-compose exec backend python manage.py migrate
-docker-compose exec backend python manage.py collectstatic --no-input
-docker-compose exec backend python manage.py load_ingredients
-docker-compose exec backend python manage.py load_tags
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py collectstatic --no-input
+docker-compose exec web python manage.py load_ingredients
+docker-compose exec web python manage.py load_tags
 Создайте Суперпользователя:
-docker-compose exec backend python manage.py createsuperuser
+docker-compose exec web python manage.py createsuperuser
 Запустить в браузере
 http://localhost/

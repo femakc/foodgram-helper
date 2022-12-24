@@ -59,13 +59,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
@@ -102,13 +95,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-# STATIC_URL = '/backend-static/'
-
-# STATIC_ROOT = os.path.join(BASE_DIR, 'backend-static/')
-
-# MEDIA_URL = '/backend-media/'
-
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'backend-media')
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
@@ -116,28 +102,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# R_CHOICES = {
-#     'breakfast': 'Завтрак',
-#     'lunch': 'обед',
-#     'dinner': 'ужин'
-# }
-
-# COLOR_CHOICES = {
-#     'breakfast': '#553277',
-#     'lunch': '#f51100',
-#     'dinner': '#d3fb00'
-# }
-
-# BR = 'breakfast'
-# LN = 'lunch'
-# DR = 'dinner'
-
-# TAG_CHOICES = [
-#     (BR, 'Завтрак'),
-#     (LN, 'обед'),
-#     (DR, 'ужин')
-# ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -150,12 +114,3 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'user.User'
-
-# ANON = 'anon'
-# USER = 'user'
-# ADMIN = 'admin'
-# ROLES_CHOICES = [
-#     (ANON, 'Аноним'),
-#     (USER, 'Аутентифицированный пользователь'),
-#     (ADMIN, 'Администратор'),
-# ]

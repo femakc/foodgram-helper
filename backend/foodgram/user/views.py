@@ -1,15 +1,14 @@
 from django.contrib.auth.hashers import make_password
+from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import mixins
 
 from api.permissions import IsOwnerOnly
-from api.serializers import (SetPasswordSerializer,
-                             UserSerializer, UsersSerializer,
-                             UserSubscribtionsSerializer)
+from api.serializers import (SetPasswordSerializer, UserSerializer,
+                             UsersSerializer, UserSubscribtionsSerializer)
 from recipes.models import Recipe
 
 from .models import Follow, User
@@ -57,7 +56,6 @@ class UserVievSet(
         """ Смена пароля """
         new_password = request.data.get('new_password')
         current_password = request.data.get('current_password')
-        is_user = User.objects.filter(username=request.user).exists()
         user = User.objects.get(username=request.user)
         serializer = SetPasswordSerializer(
                 user,
@@ -80,10 +78,8 @@ class UserVievSet(
     )
     def subscribe(self, request, pk=None):
         """ Подписка на авторов рецепта"""
-        # if User.objects.filter(pk=pk).exists():
-        # if get_object_or_404(User, pk=pk):
+
         user = request.user
-        # author = User.objects.get(pk=pk)
         author = get_object_or_404(User, pk=pk)
         if request.method == 'POST' and user != author:
             Follow.objects.get_or_create(user=user, author=author)
@@ -112,10 +108,6 @@ class UserVievSet(
             'User + Author ошибка модели Follow',
             status=status.HTTP_400_BAD_REQUEST
         )
-        # return Response(
-        #     "Нет такого автора !",
-        #     status=status.HTTP_400_BAD_REQUEST
-        # )
 
 
 class UserSubscribtionsViewSet(viewsets.ModelViewSet):
