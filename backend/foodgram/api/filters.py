@@ -24,5 +24,5 @@ class Filter(FilterSet):
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         if value:
-            return queryset.filter(recipe_cart__user=self.request.user)
+            return queryset.filter(usershopcart__user=self.request.user)
         return queryset

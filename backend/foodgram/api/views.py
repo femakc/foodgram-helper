@@ -34,17 +34,14 @@ class TagsViewSet(
     pagination_class = None
 
 
-class IngredientVievSet(
-    mixins.RetrieveModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class IngredientVievSet(viewsets.ReadOnlyModelViewSet):
     """ Обработчик модели Ingredient """
     queryset = Ingredients.objects.all()
-    permission_classes = [AllowAny,]
+    # permission_classes = [AllowAny,]
     serializer_class = IngredientSerializer
     filter_backends = (filters.SearchFilter,)
-    search_fields = ['name',]
+    search_fields = ['^name',]
+    pagination_class = None
 
 
 class RecipeVievSet(viewsets.ModelViewSet):
@@ -99,7 +96,7 @@ class RecipeVievSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
         name='shopping_cart'
     )
-    def shopping_cart(self, request, pk=None, cart_or_fav=None):
+    def shopping_cart(self, request, pk=None):
         """ Обработка запросов на добавление в избранное и корзину """
 
         user = request.user
@@ -110,12 +107,7 @@ class RecipeVievSet(viewsets.ModelViewSet):
         )
 
         if request.method == "POST":
-            if cart_or_fav == 'favorite':
-                Favorite.objects.create(
-                    user=user,
-                    recipe=recipe
-                )
-            UserShopCart.objects.create(
+            UserShopCart.objects.get_or_create(
                 user=user,
                 recipe=recipe
             )
@@ -142,8 +134,31 @@ class RecipeVievSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk=None):
         """ обработчик запросов по url .../favorite/"""
-        favorite = 'favorite'
-        return self.shopping_cart(request, pk, favorite)
+        user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        favorite = Favorite.objects.filter(
+            user=user,
+            recipe=recipe
+        )
+
+        if request.method == "POST":
+            Favorite.objects.get_or_create(
+                user=user,
+                recipe=recipe
+            )
+            serializer = ShopingCardSerializer(recipe)
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+        elif request.method == 'DELETE':
+            favorite.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UsersVievSet(mixins.CreateModelMixin,

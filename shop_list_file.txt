@@ -1,0 +1,8 @@
+Список ингредиентов:
+ingredient__name - ads
+ingredient__measurement_unit - asd
+amount - 10
+Список ингредиентов:
+ingredient__name - qwe
+ingredient__measurement_unit - wqe
+amount - 10

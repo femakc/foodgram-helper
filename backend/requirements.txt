@@ -1,5 +1,5 @@
 asgiref==3.5.2
-autopep8==2.0.1
+# autopep8==2.0.1
 backports.zoneinfo==0.2.1
 cairocffi==1.4.0
 CairoSVG==2.5.2
@@ -11,7 +11,7 @@ coreschema==0.0.4
 cryptography==38.0.4
 cssselect2==0.7.0
 defusedxml==0.7.1
-Django==4.1.4
+Django==3.2.16
 django-colorfield==0.8.0
 django-dotenv==1.4.2
 django-filter==22.1
@@ -21,7 +21,7 @@ djangorestframework-simplejwt==4.8.0
 djoser==2.1.0
 drf-extra-fields==3.4.1
 drf-yasg==1.21.4
-flake8==6.0.0
+flake8==5.0.4
 gunicorn==20.1.0
 html5lib==1.1
 idna==3.4
@@ -36,9 +36,9 @@ oauthlib==3.2.2
 packaging==22.0
 Pillow==9.3.0
 psycopg2-binary==2.8.6
-pycodestyle==2.10.0
+# pycodestyle==2.10.0
 pycparser==2.21
-pyflakes==3.0.1
+pyflakes==2.5.0
 Pygments==2.10.0
 PyJWT==2.6.0
 pyphen==0.13.2

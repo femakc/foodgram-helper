@@ -202,7 +202,7 @@ class UserShopCart(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='usershopcart',
+        related_name='user_cart',
         blank=False,
         verbose_name='Пользователь',
         help_text='Пользователь корзины'
@@ -214,11 +214,11 @@ class UserShopCart(models.Model):
         verbose_name='рецепт',
         help_text='рецепт пользователя'
     )
-    pub_date = models.DateField(
-        auto_now_add=True,
-        verbose_name='Дата добавления',
-        help_text='Дата добавления рецепта'
-    )
+    # pub_date = models.DateField(
+    #     auto_now_add=True,
+    #     verbose_name='Дата добавления',
+    #     help_text='Дата добавления рецепта'
+    # )
 
     class Meta:
         verbose_name = 'Список избранных'
@@ -240,7 +240,7 @@ class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorite',
+        related_name='user',
         blank=False,
         verbose_name='Пользователь',
         help_text='Пользователь корзины'
@@ -248,15 +248,15 @@ class Favorite(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='favorite',
+        related_name='favorite_recipe',
         verbose_name='рецепт',
         help_text='рецепт пользователя'
     )
-    pub_date = models.DateField(
-        auto_now_add=True,
-        verbose_name='Дата добавления',
-        help_text='Дата добавления рецепта'
-    )
+    # pub_date = models.DateField(
+    #     auto_now_add=True,
+    #     verbose_name='Дата добавления',
+    #     help_text='Дата добавления рецепта'
+    # )
 
     class Meta:
         verbose_name = 'Список избранных рецептов'

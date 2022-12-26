@@ -73,7 +73,6 @@ class IngredientsSerializer(serializers.ModelSerializer):
         ]
 
 
-@transaction.atomic
 class UserSerializer(serializers.ModelSerializer):
     """ Сериализаторор для модели User."""
     password = serializers.CharField(
@@ -96,7 +95,7 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
-            'is_subscribed',
+            # 'is_subscribed',
             'password',
         ]
 
@@ -130,7 +129,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
+        if not request.user.is_authenticated:
             return False
         return Favorite.objects.filter(
             user=request.user, recipe_id=obj
@@ -138,7 +137,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
+        if not request.user.is_authenticated:
             return False
         return UserShopCart.objects.filter(
             user=request.user, recipe_id=obj
@@ -176,14 +175,14 @@ class CreateRecipeSerialzer(serializers.ModelSerializer):
 
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
-        list = []
+        # list = []
         for ingredient in ingredients:
             amount = ingredient['amount']
             if int(amount) < 1:
                 raise serializers.ValidationError({
                    'amount': 'Количество ингредиента не может быть равным 0'
                 })
-            list.append(ingredient['id'])
+            # list.append(ingredient['id'])
         data['ingredients'] = ingredients
         return data
 
