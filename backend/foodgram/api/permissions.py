@@ -25,7 +25,6 @@ class AdminOrReadOnly(permissions.BasePermission):
             return request.method in permissions.SAFE_METHODS
         return (
             request.method in permissions.SAFE_METHODS
-            or request.user.role == ADMIN
         )
 
 

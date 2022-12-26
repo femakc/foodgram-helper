@@ -142,7 +142,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
             return False
         return Favorite.objects.filter(
             user=request.user, recipe_id=obj
-            ).exists()
+        ).exists()
 
     def get_is_in_shopping_cart(self, obj):
         request = self.context.get('request')
@@ -150,7 +150,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
             return False
         return UserShopCart.objects.filter(
             user=request.user, recipe_id=obj
-            ).exists()
+        ).exists()
 
 
 @transaction.atomic
@@ -188,9 +188,9 @@ class CreateRecipeSerialzer(serializers.ModelSerializer):
         for ingredient in ingredients:
             amount = ingredient['amount']
             if int(amount) < 1:
-                raise serializers.ValidationError({
-                   'amount': 'Количество ингредиента не может быть равным 0'
-                })
+                raise serializers.ValidationError(
+                    {'amount': 'Количество ингредиента не может быть равным 0'}
+                )
             # list.append(ingredient['id'])
         data['ingredients'] = ingredients
         return data

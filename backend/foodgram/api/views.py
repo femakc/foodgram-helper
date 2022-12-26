@@ -12,6 +12,7 @@ from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
                             Tags, UserShopCart)
 from recipes.utilits import make_send_file
 from user.models import Follow, User
+
 from . import serializers
 from .filters import Filter
 from .permissions import IsAuthorOrReadOnly, IsOwnerOnly
@@ -70,7 +71,11 @@ class RecipeVievSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=partial
+        )
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         recipe = get_object_or_404(Recipe, pk=serializer.data.get('id'))
@@ -86,11 +91,6 @@ class RecipeVievSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         serializer.save(author=self.request.user)
-
-    # def get_serializer_context(self):
-    #     context = super().get_serializer_context()
-    #     context.update({'request': self.request})
-    #     return context
 
     @action(
         detail=False,
@@ -148,7 +148,7 @@ class RecipeVievSet(viewsets.ModelViewSet):
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
-            )
+        )
 
     @action(
         detail=True,
@@ -182,7 +182,7 @@ class RecipeVievSet(viewsets.ModelViewSet):
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
-            )
+        )
 
 
 class UsersVievSet(mixins.CreateModelMixin,
@@ -228,10 +228,7 @@ class UserVievSet(
         new_password = request.data.get('new_password')
         current_password = request.data.get('current_password')
         user = User.objects.get(username=request.user)
-        serializer = SetPasswordSerializer(
-                user,
-                data=request.data
-            )
+        serializer = SetPasswordSerializer(user, data=request.data)
         serializer.is_valid(raise_exception=True)
         if user.check_password(current_password):
             serializer.save(password=make_password(new_password))
