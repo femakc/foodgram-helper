@@ -129,7 +129,6 @@ class RecipeVievSet(viewsets.ModelViewSet):
             user=user,
             recipe=recipe
         )
-
         if request.method == "POST":
             UserShopCart.objects.get_or_create(
                 user=user,
