@@ -5,6 +5,6 @@ def make_send_file(ingredient):
             for key, value in i.items():
                 shop_list_file.write(f'{key} - {value}\n')
 
-        with open('shop_list_file.txt', 'r') as f:
-            file_data = f.read()
+    with open('shop_list_file.txt', 'r') as f:
+        file_data = f.read()
     return file_data

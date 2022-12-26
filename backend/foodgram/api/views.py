@@ -12,10 +12,10 @@ from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
                             Tags, UserShopCart)
 from recipes.utilits import make_send_file
 from user.models import Follow, User
-
+from . import serializers
 from .filters import Filter
 from .permissions import IsAuthorOrReadOnly, IsOwnerOnly
-from .serializers import (CreateRecipeSerialzer, IngredientSerializer,
+from .serializers import (CreateRecipeSerialzer, IngredientsSerializer,
                           RecipeSerialzer, SetPasswordSerializer,
                           ShopingCardSerializer, TagsSerializer,
                           UserSerializer, UsersSerializer,
@@ -38,7 +38,7 @@ class IngredientVievSet(viewsets.ReadOnlyModelViewSet):
     """ Обработчик модели Ingredient """
     queryset = Ingredients.objects.all()
     # permission_classes = [AllowAny,]
-    serializer_class = IngredientSerializer
+    serializer_class = IngredientsSerializer
     filter_backends = (filters.SearchFilter,)
     search_fields = ['^name',]
     pagination_class = None
@@ -67,10 +67,30 @@ class RecipeVievSet(viewsets.ModelViewSet):
         )
         return Response(new_serializer.data, status=status.HTTP_201_CREATED)
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        recipe = get_object_or_404(Recipe, pk=serializer.data.get('id'))
+        new_serializer = serializers.RecipeSerialzer(
+            recipe,
+            context={'request': request},
+            partial=partial
+        )
+        return Response(new_serializer.data, status=status.HTTP_200_OK)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
+
+    # def get_serializer_context(self):
+    #     context = super().get_serializer_context()
+    #     context.update({'request': self.request})
+    #     return context
 
     @action(
         detail=False,
@@ -88,7 +108,11 @@ class RecipeVievSet(viewsets.ModelViewSet):
         ).annotate(amount=Sum('amount'))
 
         file_data = make_send_file(ingredient)
-        return HttpResponse(file_data, status=status.HTTP_200_OK)
+        return HttpResponse(
+            file_data,
+            content_type='text/plain',
+            status=status.HTTP_200_OK
+        )
 
     @action(
         detail=True,

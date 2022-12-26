@@ -45,10 +45,11 @@ class TagsSerializer(serializers.ModelSerializer):
 class IngredientPropertySerializer(serializers.ModelSerializer):
     """ Сериализаторор для модели IngredientProperty."""
 
-    id = serializers.ReadOnlyField(source='ingredient.id')
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField(source='ingredient.name')
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit',
+        read_only=True
     )
 
     class Meta:
@@ -104,7 +105,12 @@ class RecipeSerialzer(serializers.ModelSerializer):
 
     tags = TagsSerializer(many=True)
     author = UserSerializer(read_only=True)
-    ingredients = serializers.SerializerMethodField()
+    # ingredients = serializers.SerializerMethodField()
+    ingredients = IngredientPropertySerializer(
+        source='resipe_ingredient',
+        required=True,
+        many=True
+    )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -123,9 +129,12 @@ class RecipeSerialzer(serializers.ModelSerializer):
             'cooking_time'
         ]
 
-    def get_ingredients(self, obj):
-        ingredients = Ingredients.objects.filter(recipe=obj)
-        return IngredientSerializer(ingredients, many=True).data
+    # def get_ingredient(self, obj):
+    #     ingredient
+
+    # def get_ingredients(self, obj):
+    #     ingredients = Ingredients.objects.filter(recipe=obj)
+    #     return IngredientSerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')

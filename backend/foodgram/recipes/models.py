@@ -149,17 +149,18 @@ class IngredientProperty(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient_property'
+        related_name='resipe_ingredient'
     )
     ingredient = models.ForeignKey(
         Ingredients,
         on_delete=models.CASCADE,
-        related_name='ingredient_property',
+        related_name='ingredient',
     )
     amount = models.PositiveSmallIntegerField(
         blank=False,
         verbose_name='Количество',
-        help_text='Количество ингредиента'
+        help_text='Количество ингредиента',
+        validators=[MinValueValidator(1, 'Значение должно быть больше нуля.')]
     )
 
     class Meta:
