@@ -1,4 +1,0 @@
-Список ингредиентов:
-ingredient__name - qwe
-ingredient__measurement_unit - qwe
-amount - 1
