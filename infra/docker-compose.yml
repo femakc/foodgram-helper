@@ -12,7 +12,7 @@ services:
     image: femakc/foodgram_backend:latest
     restart: always
     volumes:
-      - static_value:/app/foodgram/backend_static/
+      - static_value:/app/foodgram/static/
       - media_value:/app/foodgram/backend_media/
     depends_on:
       - db
