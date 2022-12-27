@@ -10,22 +10,9 @@ from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
                             Tags, TagsProperty, UserShopCart)
 from user.models import Follow, User
 
-# class Hex2NameColor(serializers.Field):
-#     """ Преобразование HEX цвета """
-#     def to_representation(self, value):
-#         return value
-
-#     def to_internal_value(self, data):
-#         try:
-#             data = webcolors.hex_to_name(data)
-#         except ValueError:
-#             raise serializers.ValidationError('Для этого цвета нет имени')
-#         return data
-
 
 class TagsSerializer(serializers.ModelSerializer):
     """ Сериализаторор для модели Tags."""
-    # color = Hex2NameColor()
     name = serializers.SerializerMethodField()
 
     class Meta:
@@ -107,7 +94,7 @@ class RecipeSerialzer(serializers.ModelSerializer):
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = Base64ImageField()
+    # image = Base64ImageField()
 
     class Meta:
         model = Recipe
