@@ -103,6 +103,7 @@ class Recipe(models.Model):
         Ingredients,
         through='IngredientProperty',
         blank=False,
+        related_name='ingredients',
         verbose_name='Ингредиент',
         help_text='Ингредиент рецепта'
     )
@@ -131,7 +132,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'Рецепты'
         verbose_name_plural = 'Рецепты'
-        ordering = ['pub_date']
+        ordering = ['-pub_date']
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'author'],

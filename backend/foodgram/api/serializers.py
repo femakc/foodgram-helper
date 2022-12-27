@@ -46,7 +46,7 @@ class IngredientPropertySerializer(serializers.ModelSerializer):
     """ Сериализаторор для модели IngredientProperty."""
 
     id = serializers.IntegerField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.ingredient')
+    name = serializers.CharField(source='ingredient')
     measurement_unit = serializers.CharField(
         source='ingredient.measurement_unit',
         read_only=True
@@ -130,8 +130,8 @@ class RecipeSerialzer(serializers.ModelSerializer):
         ]
 
     def get_ingredients(self, obj):
-        ingredients = Ingredients.objects.filter(recipe=obj)
-        return IngredientSerializer(ingredients, many=True).data
+        ingredients = IngredientProperty.objects.filter(recipe=obj)
+        return IngredientPropertySerializer(ingredients, many=True).data
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -150,14 +150,23 @@ class RecipeSerialzer(serializers.ModelSerializer):
         ).exists()
 
 
+class AmountSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(write_only=True)
+    amount = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = IngredientProperty
+        fields = ('id', 'amount',)
+
 @transaction.atomic
 class CreateRecipeSerialzer(serializers.ModelSerializer):
 
     author = UserSerializer(read_only=True)
-    ingredients = IngredientPropertySerializer(many=True)
+    ingredients = AmountSerializer(many=True)
+    # ingredients = IngredientPropertySerializer(many=True)
     # ingredients = IngredientPropertySerializer(
     #     source='resipe_ingredient',
-    #     required=True,
+    #     # required=True,
     #     many=True
     # )
     tags = serializers.PrimaryKeyRelatedField(

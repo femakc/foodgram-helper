@@ -58,7 +58,8 @@ class RecipeVievSet(viewsets.ModelViewSet):
         return CreateRecipeSerialzer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        data = request.data
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         recipe = get_object_or_404(Recipe, pk=serializer.data.get('id'))
@@ -86,8 +87,8 @@ class RecipeVievSet(viewsets.ModelViewSet):
         )
         return Response(new_serializer.data, status=status.HTTP_200_OK)
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    # def perform_create(self, serializer):
+    #     serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
         serializer.save(author=self.request.user)
