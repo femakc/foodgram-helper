@@ -215,11 +215,6 @@ class UserShopCart(models.Model):
         verbose_name='рецепт',
         help_text='рецепт пользователя'
     )
-    # pub_date = models.DateField(
-    #     auto_now_add=True,
-    #     verbose_name='Дата добавления',
-    #     help_text='Дата добавления рецепта'
-    # )
 
     class Meta:
         verbose_name = 'Список избранных'
@@ -253,11 +248,6 @@ class Favorite(models.Model):
         verbose_name='рецепт',
         help_text='рецепт пользователя'
     )
-    # pub_date = models.DateField(
-    #     auto_now_add=True,
-    #     verbose_name='Дата добавления',
-    #     help_text='Дата добавления рецепта'
-    # )
 
     class Meta:
         verbose_name = 'Список избранных рецептов'

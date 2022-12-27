@@ -2,15 +2,6 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 from django.db import models
 
-# ANON = 'anon'
-# USER = 'user'
-# ADMIN = 'admin'
-# ROLES_CHOICES = [
-#     (ANON, 'Аноним'),
-#     (USER, 'Аутентифицированный пользователь'),
-#     (ADMIN, 'Администратор'),
-# ]
-
 
 class UserManager(BaseUserManager):
     """ Manager для создания User. """
@@ -81,14 +72,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
 
     is_subscribed = models.BooleanField(default=False)
-
-    # role = models.CharField(
-    #     max_length=32,
-    #     choices=ROLES_CHOICES,
-    #     default='user',
-    #     verbose_name='Роль пользователя',
-    #     help_text='роль'
-    # )
 
     created_at = models.DateTimeField(
         auto_now_add=True,

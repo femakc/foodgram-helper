@@ -105,11 +105,6 @@ class RecipeSerialzer(serializers.ModelSerializer):
     tags = TagsSerializer(many=True)
     author = UserSerializer(read_only=True)
     ingredients = serializers.SerializerMethodField()
-    # ingredients = IngredientPropertySerializer(
-    #     source='resipe_ingredient',
-    #     required=True,
-    #     many=True
-    # )
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
@@ -163,12 +158,6 @@ class CreateRecipeSerialzer(serializers.ModelSerializer):
 
     author = UserSerializer(read_only=True)
     ingredients = AmountSerializer(many=True)
-    # ingredients = IngredientPropertySerializer(many=True)
-    # ingredients = IngredientPropertySerializer(
-    #     source='resipe_ingredient',
-    #     # required=True,
-    #     many=True
-    # )
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tags.objects.all(), many=True,
     )
@@ -195,14 +184,12 @@ class CreateRecipeSerialzer(serializers.ModelSerializer):
 
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
-        # list = []
         for ingredient in ingredients:
             amount = ingredient['amount']
             if int(amount) < 1:
                 raise serializers.ValidationError(
                     {'amount': 'Количество ингредиента не может быть равным 0'}
                 )
-            # list.append(ingredient['id'])
         data['ingredients'] = ingredients
         return data
 

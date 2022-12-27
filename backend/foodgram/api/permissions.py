@@ -1,7 +1,5 @@
 from rest_framework import permissions
 
-# from user.models import ADMIN
-
 
 class IsOwnerOnly(permissions.BasePermission):
     """
