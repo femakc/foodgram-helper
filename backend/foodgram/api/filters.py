@@ -1,4 +1,5 @@
 from django_filters.rest_framework import FilterSet, filters
+from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipe
 
@@ -26,3 +27,7 @@ class Filter(FilterSet):
         if value:
             return queryset.filter(usershopcart__user=self.request.user)
         return queryset
+
+
+class CustomSearchFilter(SearchFilter):
+    search_param = 'name'

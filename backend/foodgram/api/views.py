@@ -14,7 +14,7 @@ from recipes.utilits import make_send_file
 from user.models import Follow, User
 
 from . import serializers
-from .filters import Filter
+from .filters import Filter, CustomSearchFilter
 from .permissions import IsAuthorOrReadOnly, IsOwnerOnly
 from .serializers import (CreateRecipeSerialzer, IngredientsSerializer,
                           RecipeSerialzer, SetPasswordSerializer,
@@ -35,13 +35,16 @@ class TagsViewSet(
     pagination_class = None
 
 
+
 class IngredientVievSet(viewsets.ReadOnlyModelViewSet):
     """ Обработчик модели Ingredient """
     queryset = Ingredients.objects.all()
     # permission_classes = [AllowAny,]
     serializer_class = IngredientsSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ['^name',]
+    # filter_backends = (filters.SearchFilter,)
+    filter_backends = (CustomSearchFilter,)
+    
+    search_fields = ('^name',)
     pagination_class = None
 
 
