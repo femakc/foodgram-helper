@@ -2,19 +2,18 @@ from django.contrib.auth.hashers import make_password
 from django.db.models import Sum
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
+from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
+                            Tags, UserShopCart)
+from recipes.utilits import make_send_file
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import mixins
-
-from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
-                            Tags, UserShopCart)
-from recipes.utilits import make_send_file
 from user.models import Follow, User
 
 from . import serializers
-from .filters import Filter, CustomSearchFilter
+from .filters import CustomSearchFilter, Filter
 from .permissions import IsAuthorOrReadOnly, IsOwnerOnly
 from .serializers import (CreateRecipeSerialzer, IngredientsSerializer,
                           RecipeSerialzer, SetPasswordSerializer,
@@ -35,15 +34,11 @@ class TagsViewSet(
     pagination_class = None
 
 
-
 class IngredientVievSet(viewsets.ReadOnlyModelViewSet):
     """ Обработчик модели Ingredient """
     queryset = Ingredients.objects.all()
-    # permission_classes = [AllowAny,]
     serializer_class = IngredientsSerializer
-    # filter_backends = (filters.SearchFilter,)
     filter_backends = (CustomSearchFilter,)
-    
     search_fields = ('^name',)
     pagination_class = None
 
@@ -144,7 +139,7 @@ class RecipeVievSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED
             )
 
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             in_shop_cart.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -178,7 +173,7 @@ class RecipeVievSet(viewsets.ModelViewSet):
                 serializer.data,
                 status=status.HTTP_201_CREATED
             )
-        elif request.method == 'DELETE':
+        if request.method == 'DELETE':
             favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -269,7 +264,7 @@ class UserVievSet(
                 serializer.data,
                 status=status.HTTP_201_CREATED
             )
-        elif request.method == 'DELETE' and Follow.objects.filter(
+        if request.method == 'DELETE' and Follow.objects.filter(
             user=user,
             author=author
         ).exists():

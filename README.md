@@ -1,6 +1,6 @@
 Учебный проект Foodgram
 
-![](https://github.com/femakc/yamdb_final/actions/workflows/docker-image.yml/badge.svg)
+![Foodgram](https://github.com/femakc/foodgram-project-react/actions/workflows/docker-image.yml/badge.svg)
 
 Описание
 REST API для проекта Foodgram - «Продуктовый помощник». На этом сервисе пользователи могут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.

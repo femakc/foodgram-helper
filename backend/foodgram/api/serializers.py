@@ -3,11 +3,10 @@ from django.contrib.auth.hashers import make_password
 from django.core.validators import MinValueValidator
 from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers
-
 from foodgram.common import R_CHOICES
 from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
                             Tags, TagsProperty, UserShopCart)
+from rest_framework import serializers
 from user.models import Follow, User
 
 
@@ -157,6 +156,7 @@ class AmountSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientProperty
         fields = ('id', 'amount',)
+
 
 @transaction.atomic
 class CreateRecipeSerialzer(serializers.ModelSerializer):
