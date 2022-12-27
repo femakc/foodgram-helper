@@ -1,31 +1,31 @@
-import webcolors
+
 from django.contrib.auth.hashers import make_password
 from django.core.validators import MinValueValidator
 from django.db import transaction
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
+
 from foodgram.common import R_CHOICES
 from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
                             Tags, TagsProperty, UserShopCart)
-from rest_framework import serializers
 from user.models import Follow, User
 
+# class Hex2NameColor(serializers.Field):
+#     """ Преобразование HEX цвета """
+#     def to_representation(self, value):
+#         return value
 
-class Hex2NameColor(serializers.Field):
-    """ Преобразование HEX цвета """
-    def to_representation(self, value):
-        return value
-
-    def to_internal_value(self, data):
-        try:
-            data = webcolors.hex_to_name(data)
-        except ValueError:
-            raise serializers.ValidationError('Для этого цвета нет имени')
-        return data
+#     def to_internal_value(self, data):
+#         try:
+#             data = webcolors.hex_to_name(data)
+#         except ValueError:
+#             raise serializers.ValidationError('Для этого цвета нет имени')
+#         return data
 
 
 class TagsSerializer(serializers.ModelSerializer):
     """ Сериализаторор для модели Tags."""
-    color = Hex2NameColor()
+    # color = Hex2NameColor()
     name = serializers.SerializerMethodField()
 
     class Meta:
