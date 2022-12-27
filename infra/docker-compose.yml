@@ -12,8 +12,8 @@ services:
     image: femakc/foodgram_backend:latest
     restart: always
     volumes:
-      - static_value:/app/foodgram/static/
-      - media_value:/app/foodgram/madia/
+      - static_value:/app/foodgram/backend_static/
+      - media_value:/app/foodgram/backend_media/
     depends_on:
       - db
     env_file:
@@ -22,7 +22,7 @@ services:
   frontend:
     image: femakc/infra_frontend:latest
     volumes:
-      - ../frontend/:/app/result_build/
+      - ../frontend/:/app/foodgram/result_build/
   nginx:
     image: nginx:1.19.3
     ports:
