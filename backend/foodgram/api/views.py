@@ -229,7 +229,7 @@ class UserVievSet(
             serializer.save(password=make_password(new_password))
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
-            "Не верно введен current_password",
+            {'errors': 'Неверно введен текущий пароль'},
             status=status.HTTP_401_UNAUTHORIZED
         )
 

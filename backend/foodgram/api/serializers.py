@@ -304,7 +304,7 @@ class SetPasswordSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs['new_password'] == attrs['current_password']:
             raise serializers.ValidationError(
-                'новый и старый пароли идентичны'
+                'новый и старый пароли совпадают'
             )
         return super().validate(attrs)
 
