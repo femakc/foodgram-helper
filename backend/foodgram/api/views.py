@@ -2,15 +2,14 @@ from django.contrib.auth.hashers import make_password
 from django.db.models import Sum
 from django.shortcuts import HttpResponse, get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import mixins
-
 from recipes.models import (Favorite, IngredientProperty, Ingredients, Recipe,
                             Tags, UserShopCart)
 from recipes.utilits import make_send_file
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import mixins
 from user.models import Follow, User
 
 from . import serializers
@@ -31,7 +30,7 @@ class TagsViewSet(
     """ Обработчик модели Tags """
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
-    permission_classes = [AllowAny,]
+    # permission_classes = [AllowAny,]
     pagination_class = None
 
 
