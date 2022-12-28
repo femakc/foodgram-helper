@@ -80,7 +80,6 @@ class UserSerializer(serializers.ModelSerializer):
             'username',
             'first_name',
             'last_name',
-            # 'is_subscribed',
             'password',
         ]
 
@@ -92,7 +91,6 @@ class RecipeSerialzer(serializers.ModelSerializer):
     ingredients = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    # image = Base64ImageField()
 
     class Meta:
         model = Recipe

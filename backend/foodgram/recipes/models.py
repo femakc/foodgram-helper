@@ -87,10 +87,8 @@ class Recipe(models.Model):
         help_text='Название рецепта'
     )
     image = models.ImageField(
-        # blank=False,
         upload_to='recipes/images/',
         verbose_name='Изображение',
-        # help_text='Изображение рецепта'
     )
     text = models.CharField(
         max_length=1000,

@@ -30,7 +30,6 @@ class TagsViewSet(
     """ Обработчик модели Tags """
     queryset = Tags.objects.all()
     serializer_class = TagsSerializer
-    # permission_classes = [AllowAny,]
     pagination_class = None
 
 
