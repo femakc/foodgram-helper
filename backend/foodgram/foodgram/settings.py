@@ -10,7 +10,12 @@ SECRET_KEY = 'bk@vbn!%elzn5_!it-!%2)o7ksox!8+_n(e_ljolibsgwt2kdt'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    '84.201.158.135',
+    'localhost',
+    'femack-foodgram.ddns.net'
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
