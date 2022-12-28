@@ -1,6 +1,6 @@
 TRANS_DICT = {
     'ingredient__name': 'Название ингредиента',
-    'ingredient__measurement_unit': 'еденица измерения',
+    'ingredient__measurement_unit': 'единица измерения',
     'amount': 'количество'
 }
 
